@@ -112,8 +112,9 @@ ul { margin: 0; padding: 0; list-style: none; }
   -webkit-backdrop-filter: blur(10px);
   border-bottom-color: var(--border);
 }
-/* Bar shrinks slightly when scrolled */
-.site-header.is-scrolled .site-header__inner { padding-top: 14px; padding-bottom: 14px; }
+/* NOTE: the bar's height is deliberately constant. Shrinking it on scroll moved the page
+   content up, which pushed the scroll position back across the threshold and made the whole
+   page jitter near the top. */
 
 .site-header__inner {
   display: flex;
@@ -123,7 +124,6 @@ ul { margin: 0; padding: 0; list-style: none; }
   gap: 16px;
   padding-top: 28px;
   padding-bottom: 28px;
-  transition: padding 0.3s ease;
 }
 
 .logo {
@@ -237,11 +237,23 @@ ul { margin: 0; padding: 0; list-style: none; }
 .stack { padding-top: 24px; padding-bottom: 56px; }
 
 .pills { display: flex; flex-wrap: wrap; gap: 12px; }
-.pills li {
+/* Each pill is a toggle button; several can be selected at once (aria-pressed="true") */
+.pill {
   padding: 10px 20px;
+  background: transparent;
   border: 1px solid var(--border);
   border-radius: 999px;
+  color: var(--text);
+  font: inherit;
   font-size: 15px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+.pill:hover { border-color: rgba(127, 184, 150, 0.6); }
+.pill[aria-pressed="true"] {          /* selected state */
+  border-color: var(--green);
+  background: rgba(127, 184, 150, 0.16);
+  color: var(--green);
 }
 
 /* ---------- 7. Work ---------- */
