@@ -4,7 +4,7 @@
   <!-- ============================================================
        Portfolio landing page – HTML
        Styles and animations are held in indexstyles.css.
-       Animations are handled in script.js.
+       Animations are handled in indexscript.js.
        ============================================================ -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,8 +16,17 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-  <!-- Marks the page as JS-enabled so scroll-reveal styles only apply when script.js can run -->
-  <script>document.documentElement.classList.add('js');</script>
+  <!-- Marks the page as JS-enabled so scroll-reveal styles only apply when indexscript.js can run.
+       Fallback: if indexscript.js hasn't started within 3s (failed load), the class is removed
+       so the cards are never left hidden. indexscript.js adds "js-ready" when it runs. -->
+  <script>
+    document.documentElement.classList.add('js');
+    setTimeout(function () {
+      if (!document.documentElement.classList.contains('js-ready')) {
+        document.documentElement.classList.remove('js');
+      }
+    }, 3000);
+  </script>
 
   <link rel="stylesheet" href="indexstyles.css">
 </head>
@@ -63,8 +72,10 @@
         </ul>
       </div>
 
-      <!-- Decorative code window to showcase skills -->
-      <figure class="code-card" aria-label="Example C# code listing skills">
+      <!-- Decorative code window to showcase skills.
+           aria-hidden: the typing effect leaves partial text on screen, and the same skills
+           are listed in the Stack section, so screen readers skip this card. -->
+      <figure class="code-card" aria-hidden="true">
         <div class="code-card__dots" aria-hidden="true"><span></span><span></span><span></span></div>
 <pre><code><span class="kw">var</span> app = WebApplication.CreateBuilder(args).Build();
 
