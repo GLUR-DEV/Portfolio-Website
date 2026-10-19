@@ -1,0 +1,270 @@
+/* ==========================================================
+   Portfolio landing page – CSS (Styles)
+   Sections:
+   1. Design tokens   2. Base   3. Layout helpers
+   4. Header          5. Hero   6. Stack
+   7. Work            8. About  9. Footer
+   10. Responsive / accessibility
+   ========================================================== */
+
+/* ---------- 1. Design tokens ---------- */
+:root {
+  /* Dark grays */
+  --bg:          #1b1e1d;  /* page background */
+  --bg-deep:     #161918;  /* header/footer strip */
+  --surface:     #242826;  /* cards, code window */
+  --surface-alt: #2e3331;  /* image placeholders */
+  --border:      #3a403d;  /* outlines and dividers */
+
+  /* Text */
+  --text:        #e4e8e5;  /* main text */
+  --text-muted:  #a9b2ad;  /* secondary text */
+  --text-faint:  #7d8782;  /* labels, social links */
+
+  /* Accents */
+  --green:       #7fb896;  /* main accent: buttons, logo, highlights */
+  --green-ink:   #13201a;  /* dark text used on green buttons */
+  --terracotta:  #c98577;  /* complementary accent, used sparingly */
+
+  /* Type */
+  --font-body: "Bricolage Grotesque", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Shape and width */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --container: 1200px;
+
+  color-scheme: dark;
+}
+
+/* ---------- 2. Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.5;
+}
+
+a { color: var(--text); text-decoration: none; }
+a:hover { color: var(--green); }
+
+ul { margin: 0; padding: 0; list-style: none; }
+
+/* Clear keyboard focus ring for accessibility */
+:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 3px;
+}
+
+/* ---------- 3. Layout helpers ---------- */
+/* Centred content column used by every section */
+.container {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding-left: 32px;
+  padding-right: 32px;
+}
+
+/* Small monospace section labels, e.g. "// stack" */
+.label {
+  margin: 0 0 16px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-faint);
+}
+
+/* Hidden until focused: skip-to-content link */
+.skip-link {
+  position: absolute;
+  left: 16px;
+  top: -60px;
+  background: var(--green);
+  color: var(--green-ink);
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  z-index: 10;
+}
+.skip-link:focus { top: 16px; color: var(--green-ink); }
+
+/* ---------- 4. Header ---------- */
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-top: 28px;
+  padding-bottom: 28px;
+}
+
+.logo {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--green);
+}
+
+.nav { display: flex; flex-wrap: wrap; gap: 32px; font-size: 16px; }
+
+/* ---------- 5. Hero ---------- */
+.hero {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 56px;
+  align-items: center;
+  padding-top: 72px;
+  padding-bottom: 64px;
+}
+
+.hero__tagline {
+  margin: 0 0 20px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--terracotta);
+}
+
+.hero h1 {
+  margin: 0 0 24px;
+  font-size: clamp(40px, 5vw, 64px);
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.hero__summary {
+  margin: 0 0 36px;
+  max-width: 520px;
+  font-size: 19px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.hero__actions { display: flex; flex-wrap: wrap; gap: 16px; }
+
+/* Buttons */
+.btn {
+  padding: 14px 28px;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+}
+.btn--primary { background: var(--green); color: var(--green-ink); font-weight: 700; }
+.btn--primary:hover { background: var(--text); color: var(--green-ink); }
+.btn--secondary { border: 1px solid var(--border); }
+.btn--secondary:hover { border-color: var(--green); }
+
+/* Social links (shared by hero and footer) */
+.social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+.social a { color: var(--text-faint); }
+.social a:hover { color: var(--green); }
+.hero .social { margin-top: 28px; }
+
+/* Code window card */
+.code-card {
+  margin: 0;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid #333936;
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text-muted);
+  overflow-x: auto;           /* long lines scroll instead of breaking the layout */
+}
+.code-card pre { margin: 0; }
+.code-card__dots { display: flex; gap: 8px; margin-bottom: 16px; }
+.code-card__dots span {
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: var(--border);
+}
+/* Syntax colouring */
+.kw { color: var(--terracotta); }   /* keywords */
+.fn { color: var(--green); }        /* method names */
+
+/* ---------- 6. Stack ---------- */
+.stack { padding-top: 24px; padding-bottom: 56px; }
+
+.pills { display: flex; flex-wrap: wrap; gap: 12px; }
+.pills li {
+  padding: 10px 20px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 15px;
+}
+
+/* ---------- 7. Work ---------- */
+.work { padding-bottom: 72px; }
+
+/* Responsive grid: as many 260px+ columns as fit */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+}
+
+.card {
+  padding: 28px;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+}
+.card__image {                /* swap for a real <img> when you have screenshots */
+  height: 120px;
+  margin-bottom: 20px;
+  background: var(--surface-alt);
+  border-radius: var(--radius-sm);
+}
+.card h3 { margin: 0 0 8px; font-size: 22px; }
+.card p  { margin: 0; color: var(--text-muted); }
+
+/* ---------- 8. About ---------- */
+.about { padding-bottom: 72px; }
+.about p {
+  margin: 0;
+  max-width: 900px;           /* keeps line length comfortable to read */
+  font-size: 19px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+/* ---------- 9. Footer ---------- */
+.site-footer {
+  background: var(--bg-deep);
+  border-top: 1px solid #2e3331;
+}
+.site-footer__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-top: 32px;
+  padding-bottom: 32px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-faint);
+}
+.site-footer p { margin: 0; }
+.site-footer .social { font-size: 13px; }
+
+/* ---------- 10. Responsive / accessibility ---------- */
+@media (max-width: 600px) {
+  .container { padding-left: 20px; padding-right: 20px; }
+  .hero { gap: 40px; padding-top: 40px; }
+  .nav { gap: 20px; }
+}
+
+/* Respect users who prefer no motion (this design has none, so this is a safeguard) */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}

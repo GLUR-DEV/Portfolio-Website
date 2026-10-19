@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- ============================================================
+       Portfolio landing page – HTML
+       Styles are held in indexstyles.css.
+       ============================================================ -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GLUR Solutions</title>
+  <meta name="description" content="GLUR Solutions: C#, .NET and web development.">
+
+  <!-- Fonts: Bricolage Grotesque (headings/body) and JetBrains Mono (code/labels) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="indexstyles.css">
+</head>
+<body>
+
+  <!-- Lets keyboard users jump past the navigation -->
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ===== HEADER: logo + main navigation ===== -->
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="logo" href="#top">&lt; GLUR Solutions /&gt;</a>
+      <nav aria-label="Main">
+        <ul class="nav">
+          <li><a href="#work">Work</a></li>
+          <li><a href="#stack">Stack</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ===== HERO: headline, call-to-action buttons, social links and code card ===== -->
+    <section class="hero container" id="top">
+      <div class="hero__text">
+        <p class="hero__tagline">Web Development · C# · .NET</p>
+        <h1>I create digital solutions that drive REAL business results</h1>
+        <p class="hero__summary">I create responsive, user-friendly websites and web applications to solve your business challenges.</p>
+
+        <!-- Primary and secondary calls to action -->
+        <div class="hero__actions">
+          <a class="btn btn--primary" href="#work">View my work</a>
+          <a class="btn btn--secondary" href="#contact">Get in touch</a>
+        </div>
+
+        <!-- Social links -->
+        <ul class="social">
+          <li><a href="https://github.com/GLUR-DEV">GitHub</a></li>
+          <li><a href="https://www.linkedin.com/in/adam-lawrence-a4718b445/">LinkedIn</a></li>
+        </ul>
+      </div>
+
+      <!-- Decorative code window to showcase skills -->
+      <figure class="code-card" aria-label="Example C# code listing skills">
+        <div class="code-card__dots" aria-hidden="true"><span></span><span></span><span></span></div>
+<pre><code><span class="kw">var</span> app = WebApplication.CreateBuilder(args).Build();
+
+app.<span class="fn">MapGet</span>("/skills", () =&gt; <span class="kw">new</span>[] {
+    "C#", "HTML/CSS/JS", "ASP.NET Core", "JavaScript", "SQL",
+    "Python"
+});</code></pre>
+      </figure>
+    </section>
+
+    <!-- ===== STACK: technology pills ===== -->
+    <section class="stack container" id="stack" aria-labelledby="stack-title">
+      <h2 class="label" id="stack-title">// Stack</h2>
+      <ul class="pills">
+        <li>HTML / CSS / JS</li>
+        <li>C#</li>
+        <li>.NET</li>
+        <li>SQL</li>
+      </ul>
+    </section>
+
+    <!-- ===== WORK: project cards (duplicate a card to add more) ===== -->
+    <section class="work container" id="work" aria-labelledby="work-title">
+      <h2 class="label" id="work-title">// My work</h2>
+      <div class="cards">
+        <article class="card">
+          <div class="card__image" role="img" aria-label="[PROJECT ONE] screenshot"></div>
+          <h3>[PROJECT ONE]</h3>
+          <p>[Short description and tech used]</p>
+        </article>
+        <article class="card">
+          <div class="card__image" role="img" aria-label="[PROJECT TWO] screenshot"></div>
+          <h3>[PROJECT TWO]</h3>
+          <p>[Short description and tech used]</p>
+        </article>
+        <article class="card">
+          <div class="card__image" role="img" aria-label="[PROJECT THREE] screenshot"></div>
+          <h3>[PROJECT THREE]</h3>
+          <p>[Short description and tech used]</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===== ABOUT: short bio (added so the nav link has a target) ===== -->
+    <section class="about container" id="about" aria-labelledby="about-title">
+      <h2 class="label" id="about-title">// About</h2>
+      <p>I am a passionate web developer with expertise in C#, .NET, and modern web technologies. 
+        I enjoy creating efficient, scalable, and user-friendly applications that solve real-world problems for businesses and individuals.
+        I am currently studying Computer Science and Cyber Security at the University of Waikato.</p>
+    </section>
+
+  </main>
+
+  <!-- ===== FOOTER: copyright and contact links (also the #contact target) ===== -->
+  <footer class="site-footer" id="contact">
+    <div class="container site-footer__inner">
+      <p>
+        <span class="logo">&lt; GLUR Solutions /&gt;</span>
+        &nbsp;© 2026 · Built with Love by GLUR
+      </p>
+      <ul class="social">
+        <li><a href="https://github.com/GLUR-DEV">GitHub</a></li>
+        <li><a href="https://www.linkedin.com/in/adam-lawrence-a4718b445/">LinkedIn</a></li>
+        <li><a href="mailto:glur.studios@gmail.com">glur.studios@gmail.com</a></li>
+      </ul>
+    </div>
+  </footer>
+
+</body>
+</html>
