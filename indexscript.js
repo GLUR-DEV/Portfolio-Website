@@ -2,7 +2,8 @@
    Portfolio landing page – JavaScript (motion)
    1. Sticky header state   2. Code typing effect
    3. Work card reveal      4. Active nav link
-   5. Stack pill toggles
+   5. Stack pill toggles and project filtering
+   6. Contact form (opens the visitor's email app)
    Everything respects "prefers-reduced-motion".
    ========================================================== */
 (() => {
@@ -78,9 +79,9 @@
      Highlights the nav item for the section whose top has passed a line
      35% down the screen. Scroll-based rather than observer-based so the short
      Stack section still gets its turn. Nothing is highlighted while the hero is
-     in view, and Contact lights up when the page reaches the bottom. */
+     in view, and the last section (About) stays lit once the page reaches the bottom. */
   const links = document.querySelectorAll('.nav a');
-  const spySections = ['stack', 'work', 'about', 'contact']      // in page order
+  const spySections = ['stack', 'work', 'contact', 'about']      // in page order
     .map(id => document.getElementById(id))
     .filter(Boolean);
   let spyQueued = false;
@@ -94,7 +95,7 @@
     });
     const atBottom = window.scrollY > 0 &&
       window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
-    if (atBottom) current = 'contact';
+    if (atBottom) current = spySections[spySections.length - 1].id;
 
     links.forEach(link => {
       if (current && link.getAttribute('href') === '#' + current) {
@@ -111,18 +112,67 @@
   }, { passive: true });
   updateSpy();
 
-  /* ---------- 5. Stack pill toggles ----------
+  /* ---------- 5. Stack pill toggles and project filtering ----------
      Clicking a pill selects or unselects it; any number can be selected.
-     The chosen technologies are kept in selectedStack. Filtering the work
-     cards is NOT implemented yet: it will read selectedStack where marked below. */
+     Filter rule: with nothing selected every project shows. Otherwise a project
+     shows if ANY of its tags (max 3, read from .card__tags) matches ANY selected pill. */
   const selectedStack = new Set();
+  const status = document.querySelector('.work__status');
+
+  // The tag elements of a card (only the first 3 count)
+  const tagsOf = card => Array.from(card.querySelectorAll('.card__tags li')).slice(0, 3);
+
+  const applyFilter = () => {
+    let shown = 0;
+    cards.forEach(card => {
+      const tags = tagsOf(card);
+      const matches = selectedStack.size === 0 ||
+        tags.some(tag => selectedStack.has(tag.dataset.tech));
+      card.hidden = !matches;                         // hidden cards drop out of the grid
+      if (matches) shown += 1;
+      tags.forEach(tag => tag.classList.toggle('is-match', selectedStack.has(tag.dataset.tech)));
+    });
+
+    // Status line: empty (hidden) with no filter, otherwise a count or a "none" message
+    if (selectedStack.size === 0) {
+      status.textContent = '';
+    } else if (shown === 0) {
+      status.textContent = 'No projects match the selected tags.';
+    } else {
+      status.textContent = `Showing ${shown} of ${cards.length} projects`;
+    }
+  };
+
   document.querySelectorAll('.pill').forEach(pill => {
     pill.addEventListener('click', () => {
       const isOn = pill.getAttribute('aria-pressed') !== 'true';
       pill.setAttribute('aria-pressed', String(isOn));   // drives the CSS and screen readers
       if (isOn) selectedStack.add(pill.dataset.tech);
       else selectedStack.delete(pill.dataset.tech);
-      // TODO: filter the work cards using selectedStack
+      applyFilter();
     });
   });
+
+  /* ---------- 6. Contact form ----------
+     On submit this builds a mailto: link (subject and body
+     filled in) and opens the visitor's email app. The address comes from the form's
+     data-email attribute. Native validation (required fields, valid email) runs first. */
+  const form = document.querySelector('.contact-form');
+  if (form) {
+    const formStatus = form.querySelector('.form__status');
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      const data = new FormData(form);
+      const name = String(data.get('name')).trim();
+      const email = String(data.get('email')).trim();
+      const message = String(data.get('message')).trim();
+
+      const subject = `Website enquiry from ${name}`;
+      const body = `${message}\n\n${name}\n${email}`;
+      window.location.href =
+        `mailto:${form.dataset.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+      formStatus.textContent = `Opening your email app. If nothing opens, email ${form.dataset.email} directly.`;
+    });
+  }
 })();
