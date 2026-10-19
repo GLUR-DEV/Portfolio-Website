@@ -14,7 +14,7 @@
   <!-- Fonts: Bricolage Grotesque (headings/body) and JetBrains Mono (code/labels) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
   <!-- Marks the page as JS-enabled so scroll-reveal styles only apply when indexscript.js can run.
        Fallback: if indexscript.js hasn't started within 3s (failed load), the class is removed
@@ -32,13 +32,13 @@
 </head>
 <body>
 
-  <!-- Animated "lava lamp" background: soft colour blobs drifting behind all content.
-       Purely decorative (aria-hidden); styled and animated in indexstyles.css (section 9c). -->
+  <!-- Animated "lava lamp" background: two canvases, one in each page margin outside the
+       content column. indexscript.js (section 7) draws wax-like blobs that heat, rise, cool,
+       sink, merge and split. Purely decorative (aria-hidden); sized and faded in
+       indexstyles.css (section 9c). -->
   <div class="lava" aria-hidden="true">
-    <span class="lava__blob lava__blob--1"></span>
-    <span class="lava__blob lava__blob--2"></span>
-    <span class="lava__blob lava__blob--3"></span>
-    <span class="lava__blob lava__blob--4"></span>
+    <canvas class="lava__canvas lava__canvas--left"></canvas>
+    <canvas class="lava__canvas lava__canvas--right"></canvas>
   </div>
 
   <!-- Lets keyboard users jump past the navigation -->
@@ -51,9 +51,9 @@
       <nav aria-label="Main">
         <ul class="nav">
           <li><a href="#work">Work</a></li>
-          <li><a href="#stack">Stack</a></li>
-          <li><a href="#about">About</a></li>
+          <li><a href="#stack">Skills</a></li>
           <li><a href="#contact">Contact</a></li>
+          <li><a href="#about">About</a></li>
         </ul>
       </nav>
     </div>
@@ -74,10 +74,10 @@
           <a class="btn btn--secondary" href="#contact">Get in touch</a>
         </div>
 
-        <!-- Social links -->
+        <!-- Social links (off-site links open in a new tab) -->
         <ul class="social">
-          <li><a href="https://github.com/GLUR-DEV">GitHub</a></li>
-          <li><a href="https://www.linkedin.com/in/adam-lawrence-a4718b445/">LinkedIn</a></li>
+          <li><a href="https://github.com/GLUR-DEV" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+          <li><a href="https://www.linkedin.com/in/adam-lawrence-a4718b445/" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
         </ul>
       </div>
 
@@ -97,7 +97,7 @@ app.<span class="fn">MapGet</span>("/skills", () =&gt; <span class="kw">new</spa
 
     <!-- ===== STACK: technology pills (toggle buttons; multiple can be selected) ===== -->
     <section class="stack container" id="stack" aria-labelledby="stack-title">
-      <h2 class="label" id="stack-title">// Stack</h2>
+      <h2 class="label" id="stack-title">// Skills (Stack)</h2>
       <ul class="pills">
         <li><button type="button" class="pill" aria-pressed="false" data-tech="html-css-js">HTML / CSS / JS</button></li>
         <li><button type="button" class="pill" aria-pressed="false" data-tech="csharp">C#</button></li>
@@ -184,8 +184,8 @@ app.<span class="fn">MapGet</span>("/skills", () =&gt; <span class="kw">new</spa
           <p class="contact__lead">Have a project in mind, or want to work together? Send me a message.</p>
           <ul class="social">
             <li><a href="mailto:glur.studios@gmail.com">glur.studios@gmail.com</a></li>
-            <li><a href="https://github.com/GLUR-DEV">GitHub</a></li>
-            <li><a href="https://www.linkedin.com/in/adam-lawrence-a4718b445/">LinkedIn</a></li>
+            <li><a href="https://github.com/GLUR-DEV" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+            <li><a href="https://www.linkedin.com/in/adam-lawrence-a4718b445/" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
           </ul>
         </div>
 
@@ -229,14 +229,14 @@ app.<span class="fn">MapGet</span>("/skills", () =&gt; <span class="kw">new</spa
         &nbsp;© 2026 · Built with Love by GLUR
       </p>
       <ul class="social">
-        <li><a href="https://github.com/GLUR-DEV">GitHub</a></li>
-        <li><a href="https://www.linkedin.com/in/adam-lawrence-a4718b445/">LinkedIn</a></li>
+        <li><a href="https://github.com/GLUR-DEV" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+        <li><a href="https://www.linkedin.com/in/adam-lawrence-a4718b445/" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
         <li><a href="mailto:glur.studios@gmail.com">glur.studios@gmail.com</a></li>
       </ul>
     </div>
   </footer>
 
-  <!-- Header scroll state, code typing effect, card reveal, active nav link, stack filter and contact form -->
+  <!-- Header scroll state, code typing effect, card reveal, active nav link, stack filter, contact form and lava lamp -->
   <script src="indexscript.js" defer></script>
 
 </body>
