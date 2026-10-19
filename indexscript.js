@@ -5,6 +5,9 @@
    Everything respects "prefers-reduced-motion".
    ========================================================== */
 (() => {
+  // Tells the inline fallback in index.html that this script loaded
+  document.documentElement.classList.add('js-ready');
+
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ---------- 1. Sticky header state ----------
@@ -23,12 +26,13 @@
     const pre = code.parentElement;
     pre.style.minHeight = pre.offsetHeight + 'px';   // reserve full height so the layout doesn't jump
 
-    // Collect and clear the text nodes
+    // Collect and clear the text nodes (empty ones are skipped)
     const walker = document.createTreeWalker(code, NodeFilter.SHOW_TEXT);
     const parts = [];
     while (walker.nextNode()) {
-      parts.push({ node: walker.currentNode, text: walker.currentNode.nodeValue });
-      walker.currentNode.nodeValue = '';
+      const node = walker.currentNode;
+      if (node.nodeValue.length) parts.push({ node, text: node.nodeValue });
+      node.nodeValue = '';
     }
 
     // Blinking cursor that follows the typing
@@ -39,16 +43,16 @@
     let part = 0;   // which text node we're typing into
     let char = 0;   // how many characters of it are shown
     const type = () => {
-      if (part >= parts.length) return;              // finished: cursor keeps blinking
       const { node, text } = parts[part];
+      if (char === 0) node.after(cursor);            // move the cursor only when a new node starts
       char += 1;
       node.nodeValue = text.slice(0, char);
-      node.after(cursor);
+      const typed = text[char - 1];
       if (char >= text.length) { part += 1; char = 0; }
-      const typed = text[char - 1] || '';
-      setTimeout(type, /\s/.test(typed) ? 8 : 28);   // whitespace is quicker than letters
+      // Keep scheduling only while there is text left; the cursor then just blinks
+      if (part < parts.length) setTimeout(type, /\s/.test(typed) ? 8 : 28);  // whitespace is quicker
     };
-    setTimeout(type, 700);                           // short pause after page load
+    if (parts.length) setTimeout(type, 700);         // short pause after page load
   }
 
   /* ---------- 3. Work card reveal ----------
@@ -70,24 +74,39 @@
   }
 
   /* ---------- 4. Active nav link ----------
-     Highlights the nav item for the section currently in view. */
+     Highlights the nav item for the section whose top has passed a line
+     35% down the screen. Scroll-based rather than observer-based so the short
+     Stack section still gets its turn. Nothing is highlighted while the hero is
+     in view, and Contact lights up when the page reaches the bottom. */
   const links = document.querySelectorAll('.nav a');
-  if ('IntersectionObserver' in window) {
-    const spy = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (!entry.isIntersecting) return;
-        links.forEach(link => {
-          if (link.getAttribute('href') === '#' + entry.target.id) {
-            link.setAttribute('aria-current', 'true');
-          } else {
-            link.removeAttribute('aria-current');
-          }
-        });
-      });
-    }, { rootMargin: '-40% 0px -55% 0px' });          // triggers near the middle of the screen
-    ['work', 'stack', 'about', 'contact'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) spy.observe(el);
+  const spySections = ['stack', 'work', 'about', 'contact']      // in page order
+    .map(id => document.getElementById(id))
+    .filter(Boolean);
+  let spyQueued = false;
+
+  const updateSpy = () => {
+    spyQueued = false;
+    const line = window.innerHeight * 0.35;
+    let current = null;                                          // null = hero / top of page
+    spySections.forEach(section => {
+      if (section.getBoundingClientRect().top <= line) current = section.id;
     });
-  }
+    const atBottom = window.scrollY > 0 &&
+      window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+    if (atBottom) current = 'contact';
+
+    links.forEach(link => {
+      if (current && link.getAttribute('href') === '#' + current) {
+        link.setAttribute('aria-current', 'true');
+      } else {
+        link.removeAttribute('aria-current');
+      }
+    });
+  };
+
+  // Run at most once per frame while scrolling
+  window.addEventListener('scroll', () => {
+    if (!spyQueued) { spyQueued = true; requestAnimationFrame(updateSpy); }
+  }, { passive: true });
+  updateSpy();
 })();
