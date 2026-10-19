@@ -4,6 +4,7 @@
    3. Work card reveal      4. Active nav link
    5. Stack pill toggles and project filtering
    6. Contact form (opens the visitor's email app)
+   7. Lava lamp background (canvas metaballs)
    Everything respects "prefers-reduced-motion".
    ========================================================== */
 (() => {
@@ -174,5 +175,216 @@
 
       formStatus.textContent = `Opening your email app. If nothing opens, email ${form.dataset.email} directly.`;
     });
+  }
+
+  /* ---------- 7. Lava lamp background ----------
+     Two canvases (the left and right page margins, see .lava in the CSS) each run their own
+     "lamp": a small physics simulation drawn as metaballs.
+     - Blobs heat up near the bottom (turning coral) and rise, then cool near the top
+       (turning mint) and sink, so each one cycles up and down at its own pace.
+     - Two big wax pools at the bottom sway side by side; rising blobs stretch away from
+       them and sinking blobs merge back in.
+     - Where blobs get close their fields add together, so they join and split like real wax.
+     The picture is drawn at a quarter of the screen resolution and scaled up, which keeps
+     it cheap and soft. Colours come from the --lava-* variables in the CSS.
+     With reduced motion the lamp is simulated for a few seconds and drawn once, still. */
+  const lavaCanvases = document.querySelectorAll('.lava__canvas');
+  if (lavaCanvases.length) {
+    const css = getComputedStyle(document.documentElement);
+    const readRgb = (name, fallback) => (css.getPropertyValue(name).trim() || fallback).split(',').map(Number);
+    const GREEN = readRgb('--lava-green', '95, 205, 150');
+    const MINT  = readRgb('--lava-mint',  '160, 235, 195');
+    const CORAL = readRgb('--lava-coral', '232, 128, 108');
+
+    const SCALE = 4;                                    // screen pixels per drawn pixel (raise for speed)
+    const clamp01 = v => Math.min(1, Math.max(0, v));
+    const mix = (a, b, t) => a + (b - a) * t;
+    const smooth = (edge0, edge1, x) => {               // smooth 0 to 1 ramp between two values
+      const t = clamp01((x - edge0) / (edge1 - edge0));
+      return t * t * (3 - 2 * t);
+    };
+
+    // Temperature 0 to 1 becomes a colour: mint (cool) -> green -> coral (hot)
+    const heatColour = (t, out) => {
+      const from = t < 0.5 ? MINT : GREEN;
+      const to   = t < 0.5 ? GREEN : CORAL;
+      const k = t < 0.5 ? t * 2 : (t - 0.5) * 2;
+      out[0] = mix(from[0], to[0], k);
+      out[1] = mix(from[1], to[1], k);
+      out[2] = mix(from[2], to[2], k);
+    };
+
+    class Lamp {
+      constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.time = Math.random() * 100;                // so the two lamps never match
+        this.blobs = [];
+        this.w = 0;                                     // margin size in screen pixels
+        this.h = 0;
+        this.colour = [0, 0, 0];
+        this.resize();
+      }
+
+      // Match the drawing size to the margin; keep blobs in proportion when the window changes
+      resize() {
+        const w = this.canvas.clientWidth;
+        const h = this.canvas.clientHeight;
+        if (w === this.w && h === this.h) return;
+        const sx = this.w ? w / this.w : 1;
+        const sy = this.h ? h / this.h : 1;
+        this.w = w;
+        this.h = h;
+        this.cols = Math.max(1, Math.ceil(w / SCALE));
+        this.rows = Math.max(1, Math.ceil(h / SCALE));
+        this.canvas.width = this.cols;
+        this.canvas.height = this.rows;
+        this.image = this.ctx.createImageData(this.cols, this.rows);
+        if (!w || !h) return;                           // margin is hidden: nothing to draw
+        if (this.blobs.length) {
+          this.blobs.forEach(b => { b.y *= sy; b.vy *= sy; });
+        } else {
+          this.populate();
+        }
+      }
+
+      // Create the pools and the free-floating blobs
+      populate() {
+        const { w, h } = this;
+        this.blobs = [];
+        // Two wax pools at the bottom edge (they sway but never leave)
+        [0.25, 0.75].forEach(side => this.blobs.push({
+          pool: true, cx: side, f: 0.42, y: h, ph: Math.random() * 6.28, t: 0.9, sy: 1
+        }));
+        // Free blobs: more on taller screens
+        const count = Math.min(5, Math.max(3, Math.round(h / 270)));
+        for (let i = 0; i < count; i++) {
+          this.blobs.push({
+            pool: false,
+            cx: 0.3 + Math.random() * 0.4,              // where it sways around (fraction of the width)
+            x: w / 2,
+            y: Math.random() * h,
+            vy: 0,
+            f: 0.11 + Math.random() * 0.11,              // size as a fraction of the width
+            t: Math.random(),                           // temperature
+            k: 0.6 + Math.random() * 0.8,               // how strongly heat moves it (lighter = faster)
+            fx: 0.25 + Math.random() * 0.4,             // sway speed
+            ph: Math.random() * 6.28,                   // sway offset
+            sy: 1                                       // vertical stretch
+          });
+        }
+      }
+
+      radius(b) {
+        return b.pool ? Math.max(60, this.w * b.f) : Math.max(28, this.w * b.f);
+      }
+
+      // Move everything on by dt seconds
+      step(dt) {
+        const { w, h } = this;
+        this.time += dt;
+        const time = this.time;
+        this.blobs.forEach(b => {
+          const r = this.radius(b);
+          if (b.pool) {                                 // pools slosh slowly
+            b.x = w * (b.cx + Math.sin(time * 0.35 + b.ph) * 0.18);
+            b.y = h + r * 0.2 + Math.sin(time * 0.5 + b.ph) * r * 0.18;
+            return;
+          }
+          // Heat up near the bottom, cool near the top, drift cooler in between
+          const rel = b.y / h;
+          if (rel > 0.8) b.t += 0.35 * dt;
+          else if (rel < 0.2) b.t -= 0.4 * dt;
+          else b.t -= 0.02 * dt;
+          b.t = clamp01(b.t);
+
+          // Warm blobs rise (up is negative y), cool blobs sink; damping caps the speed
+          const lift = (0.5 - b.t) * h * 0.15 * b.k + Math.sin(time * 0.7 + b.ph * 3) * h * 0.01;
+          b.vy = (b.vy + lift * dt) * Math.exp(-1.2 * dt);
+          b.y += b.vy * dt;
+          const top = r * 0.4;
+          const bottom = h + r * 0.2;
+          if (b.y < top) { b.y = top; b.vy = 0; }
+          if (b.y > bottom) { b.y = bottom; b.vy = 0; }
+
+          b.x = w * b.cx + Math.sin(time * b.fx + b.ph) * w * 0.22;   // side to side sway
+          b.sy = 1 + Math.min(0.5, Math.abs(b.vy) / 100);              // stretch while moving fast
+        });
+      }
+
+      // Draw the combined field of every blob
+      render() {
+        const { cols, rows, blobs } = this;
+        const n = blobs.length;
+        const data = this.image.data;
+        const bx = new Float32Array(n), by = new Float32Array(n), r2 = new Float32Array(n);
+        const isy = new Float32Array(n), cr = new Float32Array(n), cg = new Float32Array(n), cb = new Float32Array(n);
+        for (let i = 0; i < n; i++) {
+          const b = blobs[i];
+          const r = this.radius(b) / SCALE;
+          bx[i] = b.x / SCALE;
+          by[i] = b.y / SCALE;
+          r2[i] = r * r;
+          isy[i] = 1 / b.sy;
+          heatColour(b.t, this.colour);
+          cr[i] = this.colour[0]; cg[i] = this.colour[1]; cb[i] = this.colour[2];
+        }
+
+        let p = 0;
+        for (let y = 0; y < rows; y++) {
+          for (let x = 0; x < cols; x++) {
+            let f = 0, sr = 0, sg = 0, sb = 0;
+            for (let i = 0; i < n; i++) {
+              const dx = x + 0.5 - bx[i];
+              const dy = (y + 0.5 - by[i]) * isy[i];
+              const c = r2[i] / (dx * dx + dy * dy + 0.5);   // each blob's pull on this pixel
+              f += c;
+              sr += c * cr[i]; sg += c * cg[i]; sb += c * cb[i];
+            }
+            const body = smooth(0.9, 1.2, f);                 // solid wax where the field is strong
+            const glow = smooth(0.25, 1.0, f) * 0.35;         // soft halo around it
+            const alpha = Math.max(body * 0.95, glow);
+            const light = smooth(1.3, 3, f) * 0.3;            // brighter core where blobs overlap
+            const inv = 1 / (f + 1e-6);
+            const r = sr * inv, g = sg * inv, bl = sb * inv;
+            data[p++] = r + (255 - r) * light;
+            data[p++] = g + (255 - g) * light;
+            data[p++] = bl + (255 - bl) * light;
+            data[p++] = alpha * 255;
+          }
+        }
+        this.ctx.putImageData(this.image, 0, 0);
+      }
+    }
+
+    const lamps = Array.from(lavaCanvases).map(canvas => new Lamp(canvas));
+
+    if (reduceMotion) {
+      // Still picture: let the wax settle for a few seconds, draw once, redraw on resize
+      const drawStill = () => lamps.forEach(lamp => {
+        lamp.resize();
+        if (lamp.w) {
+          for (let i = 0; i < 120; i++) lamp.step(0.05);
+          lamp.render();
+        }
+      });
+      drawStill();
+      window.addEventListener('resize', drawStill);
+    } else {
+      // Animate at about 30 frames a second (slow-moving wax doesn't need more)
+      let last = performance.now();
+      const frame = now => {
+        requestAnimationFrame(frame);
+        const elapsed = now - last;
+        if (elapsed < 32) return;
+        last = now;
+        const dt = Math.min(0.1, elapsed / 1000);
+        lamps.forEach(lamp => {
+          lamp.resize();                               // cheap check, handles window resizes
+          if (lamp.w) { lamp.step(dt); lamp.render(); }
+        });
+      };
+      requestAnimationFrame(frame);
+    }
   }
 })();
