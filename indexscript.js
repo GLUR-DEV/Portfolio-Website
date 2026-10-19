@@ -2,7 +2,7 @@
    Portfolio landing page – JavaScript (motion)
    1. Sticky header state   2. Code typing effect
    3. Work card reveal      4. Active nav link
-   5. Stack pill toggles and project filtering
+   5. Stack pill toggles, project filtering and the mobile project limit
    6. Contact form (opens the visitor's email app)
    7. Lava lamp background (canvas metaballs)
    Everything respects "prefers-reduced-motion".
@@ -24,7 +24,8 @@
   /* ---------- 2. Code typing effect ----------
      Empties every text node in the code card, then types the original
      text back one character at a time, keeping the syntax colours. */
-  const code = document.querySelector('.code-card code');
+  // Two snippets exist (full and compact); type whichever one is currently visible
+  const code = Array.from(document.querySelectorAll('.code-card code')).find(el => el.offsetParent !== null);
   if (code && !reduceMotion) {
     const pre = code.parentElement;
     pre.style.minHeight = pre.offsetHeight + 'px';   // reserve full height so the layout doesn't jump
@@ -123,26 +124,39 @@
   // The tag elements of a card (only the first 3 count)
   const tagsOf = card => Array.from(card.querySelectorAll('.card__tags li')).slice(0, 3);
 
+  // On mobile (600px and narrower) at most 3 projects are shown, even if more match
+  const MOBILE_MAX_PROJECTS = 3;
+  const mobileQuery = window.matchMedia('(max-width: 600px)');
+
   const applyFilter = () => {
-    let shown = 0;
+    const limit = mobileQuery.matches ? MOBILE_MAX_PROJECTS : Infinity;
+    let matched = 0;   // cards that match the selected pills
+    let shown = 0;     // cards actually displayed (matched, up to the limit)
     cards.forEach(card => {
       const tags = tagsOf(card);
       const matches = selectedStack.size === 0 ||
         tags.some(tag => selectedStack.has(tag.dataset.tech));
-      card.hidden = !matches;                         // hidden cards drop out of the grid
-      if (matches) shown += 1;
+      if (matches) matched += 1;
+      const visible = matches && shown < limit;
+      card.hidden = !visible;                         // hidden cards drop out of the grid
+      if (visible) shown += 1;
       tags.forEach(tag => tag.classList.toggle('is-match', selectedStack.has(tag.dataset.tech)));
     });
 
-    // Status line: empty (hidden) with no filter, otherwise a count or a "none" message
-    if (selectedStack.size === 0) {
-      status.textContent = '';
-    } else if (shown === 0) {
+    // Status line: empty (hidden) unless filtering or limited, otherwise a count or a "none" message
+    if (matched === 0) {
       status.textContent = 'No projects match the selected tags.';
-    } else {
+    } else if (shown < matched) {
+      status.textContent = `Showing the first ${shown} of ${matched} projects`;   // mobile limit
+    } else if (selectedStack.size > 0) {
       status.textContent = `Showing ${shown} of ${cards.length} projects`;
+    } else {
+      status.textContent = '';
     }
   };
+
+  applyFilter();                                      // apply the mobile limit on load
+  mobileQuery.addEventListener('change', applyFilter);   // and when the screen size crosses 600px
 
   document.querySelectorAll('.pill').forEach(pill => {
     pill.addEventListener('click', () => {
@@ -187,6 +201,9 @@
      - Where blobs get close their fields add together, so they join and split like real wax.
      The picture is drawn at a quarter of the screen resolution and scaled up, which keeps
      it cheap and soft. Colours come from the --lava-* variables in the CSS.
+     At 1440px and narrower (phones, tablets, small laptops) the page margins are too small, so the
+     left canvas fills the whole screen (CSS section 10) and that lamp switches to a full-screen
+     mode with more, larger blobs spread across the width. The right canvas is then switched off.
      With reduced motion the lamp is simulated for a few seconds and drawn once, still. */
   const lavaCanvases = document.querySelectorAll('.lava__canvas');
   if (lavaCanvases.length) {
@@ -223,6 +240,7 @@
         this.w = 0;                                     // margin size in screen pixels
         this.h = 0;
         this.colour = [0, 0, 0];
+        this.full = false;                              // true when this canvas covers the whole screen (mobile)
         this.resize();
       }
 
@@ -233,6 +251,9 @@
         if (w === this.w && h === this.h) return;
         const sx = this.w ? w / this.w : 1;
         const sy = this.h ? h / this.h : 1;
+        const full = w > 0 && w >= document.documentElement.clientWidth - 1;
+        const modeChanged = full !== this.full;         // margin <-> full screen: start the blobs over
+        this.full = full;
         this.w = w;
         this.h = h;
         this.cols = Math.max(1, Math.ceil(w / SCALE));
@@ -241,7 +262,7 @@
         this.canvas.height = this.rows;
         this.image = this.ctx.createImageData(this.cols, this.rows);
         if (!w || !h) return;                           // margin is hidden: nothing to draw
-        if (this.blobs.length) {
+        if (this.blobs.length && !modeChanged) {
           this.blobs.forEach(b => { b.y *= sy; b.vy *= sy; });
         } else {
           this.populate();
@@ -250,22 +271,25 @@
 
       // Create the pools and the free-floating blobs
       populate() {
-        const { w, h } = this;
+        const { w, h, full } = this;
         this.blobs = [];
         // Two wax pools at the bottom edge (they sway but never leave)
         [0.25, 0.75].forEach(side => this.blobs.push({
-          pool: true, cx: side, f: 0.42, y: h, ph: Math.random() * 6.28, t: 0.9, sy: 1
+          pool: true, cx: side, f: full ? 0.3 : 0.42, y: h, ph: Math.random() * 6.28, t: 0.9, sy: 1
         }));
-        // Free blobs: more on taller screens
-        const count = Math.min(5, Math.max(3, Math.round(h / 270)));
+        // Free blobs: more on taller screens, and more and larger when covering the whole screen
+        const count = full
+          ? Math.min(4, Math.max(3, Math.round(h / 260)))
+          : Math.min(5, Math.max(3, Math.round(h / 270)));
+        const big = full ? 1.05 : 1;
         for (let i = 0; i < count; i++) {
           this.blobs.push({
             pool: false,
-            cx: 0.3 + Math.random() * 0.4,              // where it sways around (fraction of the width)
+            cx: full ? 0.15 + Math.random() * 0.7 : 0.3 + Math.random() * 0.4,   // where it sways around (fraction of the width)
             x: w / 2,
             y: Math.random() * h,
             vy: 0,
-            f: 0.11 + Math.random() * 0.11,              // size as a fraction of the width
+            f: (0.11 + Math.random() * 0.11) * big,      // size as a fraction of the width
             t: Math.random(),                           // temperature
             k: 0.6 + Math.random() * 0.8,               // how strongly heat moves it (lighter = faster)
             fx: 0.25 + Math.random() * 0.4,             // sway speed
