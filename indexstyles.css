@@ -4,6 +4,7 @@
    1. Design tokens   2. Base   3. Layout helpers
    4. Header          5. Hero   6. Stack
    7. Work            8. About  9. Footer
+   9b. Motion (typing cursor, card reveal)
    10. Responsive / accessibility
    ========================================================== */
 
@@ -39,6 +40,10 @@
 }
 
 /* ---------- 2. Base ---------- */
+/* Smooth anchor scrolling; scroll-margin keeps targets clear of the sticky header */
+html { scroll-behavior: smooth; }
+[id] { scroll-margin-top: 90px; }
+
 *, *::before, *::after { box-sizing: border-box; }
 
 body {
@@ -87,11 +92,29 @@ ul { margin: 0; padding: 0; list-style: none; }
   color: var(--green-ink);
   padding: 10px 16px;
   border-radius: var(--radius-sm);
-  z-index: 10;
+  z-index: 30;
 }
 .skip-link:focus { top: 16px; color: var(--green-ink); }
 
 /* ---------- 4. Header ---------- */
+/* Sticky bar: transparent at the top, frosted dark glass once the page scrolls.
+   The .is-scrolled class is toggled by script.js */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: 1px solid transparent;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+.site-header.is-scrolled {
+  background: rgba(27, 30, 29, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom-color: var(--border);
+}
+/* Bar shrinks slightly when scrolled */
+.site-header.is-scrolled .site-header__inner { padding-top: 14px; padding-bottom: 14px; }
+
 .site-header__inner {
   display: flex;
   align-items: center;
@@ -100,6 +123,7 @@ ul { margin: 0; padding: 0; list-style: none; }
   gap: 16px;
   padding-top: 28px;
   padding-bottom: 28px;
+  transition: padding 0.3s ease;
 }
 
 .logo {
@@ -109,6 +133,23 @@ ul { margin: 0; padding: 0; list-style: none; }
 }
 
 .nav { display: flex; flex-wrap: wrap; gap: 32px; font-size: 16px; }
+
+/* Nav links: green underline slides in on hover/focus and stays on the current section */
+.nav a { position: relative; padding: 4px 0; }
+.nav a::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: -2px;
+  width: 100%; height: 2px;
+  background: var(--green);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.25s ease;
+}
+.nav a:hover::after,
+.nav a:focus-visible::after,
+.nav a[aria-current="true"]::after { transform: scaleX(1); }
+.nav a[aria-current="true"] { color: var(--green); }
 
 /* ---------- 5. Hero ---------- */
 .hero {
@@ -216,13 +257,23 @@ ul { margin: 0; padding: 0; list-style: none; }
 .card {
   padding: 28px;
   background: var(--surface);
+  border: 1px solid transparent;       /* reserved so the hover border doesn't shift layout */
   border-radius: var(--radius-md);
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
+/* Hover: card lifts and picks up a soft green edge */
+.card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(127, 184, 150, 0.5);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
+}
+.card:hover .card__image { background: #353b38; }
 .card__image {                /* swap for a real <img> when you have screenshots */
   height: 120px;
   margin-bottom: 20px;
   background: var(--surface-alt);
   border-radius: var(--radius-sm);
+  transition: background-color 0.3s ease;
 }
 .card h3 { margin: 0 0 8px; font-size: 22px; }
 .card p  { margin: 0; color: var(--text-muted); }
@@ -256,6 +307,32 @@ ul { margin: 0; padding: 0; list-style: none; }
 }
 .site-footer p { margin: 0; }
 .site-footer .social { font-size: 13px; }
+
+/* ---------- 9b. Motion ---------- */
+/* Blinking cursor shown at the end of the typed code (added by script.js) */
+.cursor {
+  display: inline-block;
+  width: 8px;
+  height: 1.1em;
+  margin-left: 2px;
+  background: var(--green);
+  vertical-align: text-bottom;
+  animation: blink 0.5s steps(1) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* Cards start hidden (only when JS is running), then rise in one after another.
+   --i is each card's index, set by script.js, to stagger the delay.
+   "backwards" fill keeps the hover transform working after the animation ends. */
+.js .card { opacity: 0; }
+.js .card.is-visible {
+  opacity: 1;
+  animation: rise 0.6s ease backwards;
+  animation-delay: calc(var(--i, 0) * 120ms);
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(24px); }
+}
 
 /* ---------- 10. Responsive / accessibility ---------- */
 @media (max-width: 600px) {
