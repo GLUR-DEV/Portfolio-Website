@@ -21,12 +21,17 @@
   /* Text */
   --text:        #e4e8e5;  /* main text */
   --text-muted:  #a9b2ad;  /* secondary text */
-  --text-faint:  #7d8782;  /* labels, social links */
+  --text-faint:  #818b87;  /* labels, social links */
 
   /* Accents */
   --green:       #7fb896;  /* main accent: buttons, logo, highlights */
   --green-ink:   #13201a;  /* dark text used on green buttons */
   --terracotta:  #c98577;  /* complementary accent, used sparingly */
+
+  /* Lava lamp colours as R, G, B triplets (read by indexscript.js): coral is hot wax, green is warm, mint is cool */
+  --lava-green:  95, 205, 150;
+  --lava-mint:   160, 235, 195;
+  --lava-coral:  232, 128, 108;
 
   /* Type */
   --font-body: "Bricolage Grotesque", system-ui, sans-serif;
@@ -79,8 +84,8 @@ ul { margin: 0; padding: 0; list-style: none; }
 .label {
   margin: 0 0 16px;
   font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 400;
+  font-size: 20px;
+  font-weight: 500;
   color: var(--text-faint);
 }
 
@@ -129,9 +134,11 @@ ul { margin: 0; padding: 0; list-style: none; }
 
 .logo {
   font-family: var(--font-mono);
-  font-size: 15px;
+  font-size: 22px;
+  font-weight: 700;
   color: var(--green);
 }
+.site-footer .logo { font-size: 18px; }   /* slightly smaller beside the footer text */
 
 .nav { display: flex; flex-wrap: wrap; gap: 32px; font-size: 16px; }
 
@@ -204,7 +211,7 @@ ul { margin: 0; padding: 0; list-style: none; }
   flex-wrap: wrap;
   gap: 24px;
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 16px;
 }
 .social a { color: var(--text-faint); }
 .social a:hover { color: var(--green); }
@@ -320,7 +327,8 @@ ul { margin: 0; padding: 0; list-style: none; }
 .card__tags li.is-match { border-color: var(--green); color: var(--green); }
 
 /* ---------- 7b. Contact ---------- */
-.contact { padding-bottom: 72px; }
+/* Extra space below so the About section sits clearly apart from the form */
+.contact { padding-bottom: clamp(96px, 12vw, 160px); }
 
 /* Two columns: intro on the left, form on the right (stacks on narrow screens) */
 .contact__grid {
@@ -330,6 +338,9 @@ ul { margin: 0; padding: 0; list-style: none; }
   align-items: start;
 }
 @media (max-width: 900px) { .contact__grid { grid-template-columns: 1fr; gap: 32px; } }
+
+/* Vertically centred against the taller form (no effect once the columns stack) */
+.contact__intro { align-self: center; }
 
 .contact__lead {
   margin: 0 0 28px;
@@ -433,9 +444,12 @@ button.btn { align-self: flex-start; border: 0; font: inherit; font-size: 16px; 
 }
 
 /* ---------- 9c. Lava lamp background ----------
-   Fixed layer behind all content (z-index -1, above the page colour).
-   Each blob is a soft radial gradient that drifts slowly; different sizes, colours and
-   durations keep the movement from repeating in sync. Low opacity keeps text readable. */
+   A fixed layer behind everything. The animation itself is drawn onto two canvases by
+   indexscript.js (section 7). Each canvas fills one page margin outside the content column
+   (the page width minus --container, split in two), so nothing animates behind the content.
+   Below the container width the margins disappear and so does the lava.
+   The edge facing the content fades out so the lava blends into the page. The colours come
+   from the --lava-* variables in the design tokens. */
 .lava {
   position: fixed;
   inset: 0;
@@ -443,53 +457,21 @@ button.btn { align-self: flex-start; border: 0; font: inherit; font-size: 16px; 
   overflow: hidden;
   pointer-events: none;
 }
-.lava__blob {
+.lava__canvas {
   position: absolute;
-  border-radius: 50%;
-  will-change: transform;
+  top: 0;
+  height: 100%;
+  width: max(0px, calc((100% - var(--container)) / 2));
 }
-.lava__blob--1 {                     /* green, top left */
-  width: 55vmax; height: 55vmax;
-  left: -15vmax; top: -12vmax;
-  background: radial-gradient(circle, rgba(127, 184, 150, 0.22) 0%, transparent 68%);
-  animation: drift-1 38s ease-in-out infinite alternate;
+.lava__canvas--left {
+  left: 0;
+  -webkit-mask-image: linear-gradient(to right, #000 55%, transparent);
+  mask-image: linear-gradient(to right, #000 55%, transparent);
 }
-.lava__blob--2 {                     /* terracotta, right */
-  width: 45vmax; height: 45vmax;
-  right: -12vmax; top: 18vh;
-  background: radial-gradient(circle, rgba(201, 133, 119, 0.15) 0%, transparent 68%);
-  animation: drift-2 46s ease-in-out infinite alternate;
-}
-.lava__blob--3 {                     /* green, bottom */
-  width: 60vmax; height: 60vmax;
-  left: 18vw; bottom: -32vmax;
-  background: radial-gradient(circle, rgba(127, 184, 150, 0.16) 0%, transparent 68%);
-  animation: drift-3 52s ease-in-out infinite alternate;
-}
-.lava__blob--4 {                     /* small green accent, top right */
-  width: 32vmax; height: 32vmax;
-  right: 12vw; top: -8vmax;
-  background: radial-gradient(circle, rgba(127, 184, 150, 0.12) 0%, transparent 68%);
-  animation: drift-4 34s ease-in-out infinite alternate;
-}
-@keyframes drift-1 {
-  0%   { transform: translate3d(0, 0, 0) scale(1); }
-  50%  { transform: translate3d(24vw, 20vh, 0) scale(1.18); }
-  100% { transform: translate3d(8vw, 46vh, 0) scale(0.92); }
-}
-@keyframes drift-2 {
-  0%   { transform: translate3d(0, 0, 0) scale(1); }
-  50%  { transform: translate3d(-22vw, 26vh, 0) scale(0.9); }
-  100% { transform: translate3d(-8vw, -14vh, 0) scale(1.2); }
-}
-@keyframes drift-3 {
-  0%   { transform: translate3d(0, 0, 0) scale(1); }
-  50%  { transform: translate3d(28vw, -22vh, 0) scale(1.15); }
-  100% { transform: translate3d(-16vw, -8vh, 0) scale(0.9); }
-}
-@keyframes drift-4 {
-  0%   { transform: translate3d(0, 0, 0) scale(1); }
-  100% { transform: translate3d(-26vw, 34vh, 0) scale(1.3); }
+.lava__canvas--right {
+  right: 0;
+  -webkit-mask-image: linear-gradient(to left, #000 55%, transparent);
+  mask-image: linear-gradient(to left, #000 55%, transparent);
 }
 
 /* ---------- 10. Responsive / accessibility ---------- */
