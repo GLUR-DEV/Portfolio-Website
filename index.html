@@ -32,6 +32,15 @@
 </head>
 <body>
 
+  <!-- Animated "lava lamp" background: soft colour blobs drifting behind all content.
+       Purely decorative (aria-hidden); styled and animated in indexstyles.css (section 9c). -->
+  <div class="lava" aria-hidden="true">
+    <span class="lava__blob lava__blob--1"></span>
+    <span class="lava__blob lava__blob--2"></span>
+    <span class="lava__blob lava__blob--3"></span>
+    <span class="lava__blob lava__blob--4"></span>
+  </div>
+
   <!-- Lets keyboard users jump past the navigation -->
   <a class="skip-link" href="#main">Skip to content</a>
 
@@ -163,18 +172,57 @@ app.<span class="fn">MapGet</span>("/skills", () =&gt; <span class="kw">new</spa
       </div>
     </section>
 
+    <!-- ===== CONTACT: intro, direct links and a message form =====
+         The form builds an email and opens the visitor's email app (see section 6 in indexscript.js).
+         The action attribute is the same idea for visitors with JavaScript off. -->
+    <section class="contact container" id="contact" aria-labelledby="contact-title">
+      <h2 class="label" id="contact-title">// Contact</h2>
+      <div class="contact__grid">
+
+        <!-- Left: short pitch and direct links -->
+        <div class="contact__intro">
+          <p class="contact__lead">Have a project in mind, or want to work together? Send me a message.</p>
+          <ul class="social">
+            <li><a href="mailto:glur.studios@gmail.com">glur.studios@gmail.com</a></li>
+            <li><a href="https://github.com/GLUR-DEV">GitHub</a></li>
+            <li><a href="https://www.linkedin.com/in/adam-lawrence-a4718b445/">LinkedIn</a></li>
+          </ul>
+        </div>
+
+        <!-- Right: message form -->
+        <form class="contact-form" action="mailto:glur.studios@gmail.com" method="post" enctype="text/plain" data-email="glur.studios@gmail.com">
+          <div class="field">
+            <label for="contact-name">Name</label>
+            <input id="contact-name" name="name" type="text" autocomplete="name" required>
+          </div>
+          <div class="field">
+            <label for="contact-email">Email</label>
+            <input id="contact-email" name="email" type="email" autocomplete="email" required>
+          </div>
+          <div class="field">
+            <label for="contact-message">Message</label>
+            <textarea id="contact-message" name="message" rows="5" required></textarea>
+          </div>
+          <button class="btn btn--primary" type="submit">Send message</button>
+          <!-- Feedback after submitting -->
+          <p class="form__status" role="status"></p>
+        </form>
+
+      </div>
+    </section>
+
     <!-- ===== ABOUT: short bio ===== -->
     <section class="about container" id="about" aria-labelledby="about-title">
       <h2 class="label" id="about-title">// About</h2>
-      <p>I am a passionate web developer with expertise in C#, .NET, and modern web technologies. 
+      <p>I am a passionate web developer with expertise in C#, .NET, and modern web technologies.
         I enjoy creating efficient, scalable, and user-friendly applications that solve real-world problems for businesses and individuals.
         I am currently studying Computer Science and Cyber Security at the University of Waikato.</p>
     </section>
 
   </main>
 
-  <!-- ===== FOOTER: copyright and contact links ===== -->
-  <footer class="site-footer" id="contact">
+  <!-- ===== FOOTER: copyright and links ===== -->
+  <footer class="site-footer">
     <div class="container site-footer__inner">
       <p>
         <span class="logo">&lt; GLUR Solutions /&gt;</span>
@@ -188,7 +236,7 @@ app.<span class="fn">MapGet</span>("/skills", () =&gt; <span class="kw">new</spa
     </div>
   </footer>
 
-  <!-- Header scroll state, code typing effect, card reveal and active nav link -->
+  <!-- Header scroll state, code typing effect, card reveal, active nav link, stack filter and contact form -->
   <script src="indexscript.js" defer></script>
 
 </body>
