@@ -3,7 +3,8 @@
 <head>
   <!-- ============================================================
        Portfolio landing page – HTML
-       Styles are held in indexstyles.css.
+       Styles and animations are held in indexstyles.css.
+       Animations are handled in script.js.
        ============================================================ -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,6 +15,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Marks the page as JS-enabled so scroll-reveal styles only apply when script.js can run -->
+  <script>document.documentElement.classList.add('js');</script>
 
   <link rel="stylesheet" href="indexstyles.css">
 </head>
@@ -82,7 +86,7 @@ app.<span class="fn">MapGet</span>("/skills", () =&gt; <span class="kw">new</spa
       </ul>
     </section>
 
-    <!-- ===== WORK: project cards (duplicate a card to add more) ===== -->
+    <!-- ===== WORK: project cards ===== -->
     <section class="work container" id="work" aria-labelledby="work-title">
       <h2 class="label" id="work-title">// My work</h2>
       <div class="cards">
@@ -104,7 +108,7 @@ app.<span class="fn">MapGet</span>("/skills", () =&gt; <span class="kw">new</spa
       </div>
     </section>
 
-    <!-- ===== ABOUT: short bio (added so the nav link has a target) ===== -->
+    <!-- ===== ABOUT: short bio ===== -->
     <section class="about container" id="about" aria-labelledby="about-title">
       <h2 class="label" id="about-title">// About</h2>
       <p>I am a passionate web developer with expertise in C#, .NET, and modern web technologies. 
@@ -114,7 +118,7 @@ app.<span class="fn">MapGet</span>("/skills", () =&gt; <span class="kw">new</spa
 
   </main>
 
-  <!-- ===== FOOTER: copyright and contact links (also the #contact target) ===== -->
+  <!-- ===== FOOTER: copyright and contact links ===== -->
   <footer class="site-footer" id="contact">
     <div class="container site-footer__inner">
       <p>
@@ -128,6 +132,9 @@ app.<span class="fn">MapGet</span>("/skills", () =&gt; <span class="kw">new</spa
       </ul>
     </div>
   </footer>
+
+  <!-- Header scroll state, code typing effect, card reveal and active nav link -->
+  <script src="indexscript.js" defer></script>
 
 </body>
 </html>
