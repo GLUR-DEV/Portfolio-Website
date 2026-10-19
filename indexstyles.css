@@ -5,7 +5,7 @@
    4. Header          5. Hero   6. Stack
    7. Work            7b. Contact  8. About  9. Footer
    9b. Motion (typing cursor, card reveal)
-   9c. Lava lamp background
+   9c. Lava lamp background (side margins on wide screens, full page below 1440px)
    10. Responsive / accessibility
    ========================================================== */
 
@@ -32,6 +32,13 @@
   --lava-green:  95, 205, 150;
   --lava-mint:   160, 235, 195;
   --lava-coral:  232, 128, 108;
+
+  /* Fade for the side-margin lava (wide screens). Stops follow a smooth S-curve across the whole
+     margin, from solid at the screen edge to clear at the content column, so there is no visible
+     band where the fade starts. Edit these stops to make it longer or shorter. */
+  --lava-fade: #000 0%, rgba(0,0,0,.96) 10%, rgba(0,0,0,.88) 22%, rgba(0,0,0,.74) 34%,
+               rgba(0,0,0,.56) 46%, rgba(0,0,0,.38) 58%, rgba(0,0,0,.22) 70%,
+               rgba(0,0,0,.1) 82%, rgba(0,0,0,.03) 92%, transparent 100%;
 
   /* Type */
   --font-body: "Bricolage Grotesque", system-ui, sans-serif;
@@ -205,16 +212,67 @@ ul { margin: 0; padding: 0; list-style: none; }
 .btn--secondary { border: 1px solid var(--border); }
 .btn--secondary:hover { border-color: var(--green); }
 
-/* Social links (shared by hero and footer) */
+/* Social links (shared by hero, contact section and footer) */
 .social {
   display: flex;
   flex-wrap: wrap;
-  gap: 24px;
+  gap: 12px 14px;
   font-family: var(--font-mono);
   font-size: 16px;
 }
-.social a { color: var(--text-faint); }
-.social a:hover { color: var(--green); }
+/* Off-site and email links are green "chips" by default (tinted fill, green outline, an arrow
+   or envelope icon) so they stand out from normal text. On hover, keyboard focus or touch press
+   a solid green fill sweeps in from the left, the text turns dark, the chip lifts and the icon
+   moves. :active covers touch screens, which have no hover. */
+.social a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 6px 14px;
+  border: 1px solid rgba(127, 184, 150, 0.55);
+  border-radius: 999px;
+  color: var(--green);
+  font-weight: 500;
+  background-color: rgba(127, 184, 150, 0.12);
+  background-image: linear-gradient(var(--green), var(--green));
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 0% 100%;                          /* the solid fill, hidden until hover */
+  transition: color 0.25s ease, background-size 0.3s ease, border-color 0.25s ease,
+              transform 0.2s ease, box-shadow 0.25s ease;
+}
+.social a:hover,
+.social a:focus-visible,
+.social a:active {
+  color: var(--green-ink);
+  border-color: var(--green);
+  background-size: 100% 100%;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(127, 184, 150, 0.28);
+}
+.social a:active { transform: translateY(0) scale(0.97); }   /* pressed feel on touch */
+.social a[target="_blank"]::after {                /* arrow marks links that leave the site */
+  content: "\2197";
+  content: "\2197" / "";                          /* empty alt text so screen readers skip the arrow */
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+.social a[target="_blank"]:hover::after,
+.social a[target="_blank"]:focus-visible::after,
+.social a[target="_blank"]:active::after { transform: translate(3px, -3px); }
+.social a[href^="mailto:"]::before {               /* envelope icon marks email links */
+  content: "";
+  flex: none;
+  width: 1.15em;
+  height: 1.15em;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'%3E%3Crect x='3' y='5' width='18' height='14' rx='2'/%3E%3Cpath d='m3 7 9 6 9-6'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'%3E%3Crect x='3' y='5' width='18' height='14' rx='2'/%3E%3Cpath d='m3 7 9 6 9-6'/%3E%3C/svg%3E") center / contain no-repeat;
+  transition: transform 0.2s ease;
+}
+.social a[href^="mailto:"]:hover::before,
+.social a[href^="mailto:"]:focus-visible::before,
+.social a[href^="mailto:"]:active::before { transform: rotate(-10deg) scale(1.15); }
 .hero .social { margin-top: 28px; }
 
 /* Code window card */
@@ -231,6 +289,7 @@ ul { margin: 0; padding: 0; list-style: none; }
   overflow-x: auto;           /* long lines scroll instead of breaking the layout */
 }
 .code-card pre { margin: 0; }
+.code--compact { display: none; }   /* the short snippet only appears on mobile (section 10) */
 .code-card__dots { display: flex; gap: 8px; margin-bottom: 16px; }
 .code-card__dots span {
   width: 11px; height: 11px;
@@ -339,8 +398,10 @@ ul { margin: 0; padding: 0; list-style: none; }
 }
 @media (max-width: 900px) { .contact__grid { grid-template-columns: 1fr; gap: 32px; } }
 
-/* Vertically centred against the taller form (no effect once the columns stack) */
-.contact__intro { align-self: center; }
+/* Top-aligned with the form: the "// Contact" heading, pitch and links hang from the form's top edge
+   (no effect once the columns stack) */
+.contact__intro { align-self: start; }
+.contact__intro .label { line-height: 1.1; }   /* trims the gap above the heading text so it sits level with the box */
 
 .contact__lead {
   margin: 0 0 28px;
@@ -445,11 +506,14 @@ button.btn { align-self: flex-start; border: 0; font: inherit; font-size: 16px; 
 
 /* ---------- 9c. Lava lamp background ----------
    A fixed layer behind everything. The animation itself is drawn onto two canvases by
-   indexscript.js (section 7). Each canvas fills one page margin outside the content column
-   (the page width minus --container, split in two), so nothing animates behind the content.
-   Below the container width the margins disappear and so does the lava.
-   The edge facing the content fades out so the lava blends into the page. The colours come
-   from the --lava-* variables in the design tokens. */
+   indexscript.js (section 7).
+   - Wide screens (over 1440px): each canvas fills one page margin outside the content column
+     (the page width minus --container, split in two), so nothing animates behind the content.
+     The edge facing the content fades out gradually (--lava-fade) so the lava blends into the page.
+   - Screens 1440px and narrower (phones, tablets, small laptops): the margins are too small to
+     show anything, so the left canvas covers the whole page behind all the content instead
+     (see the block at the end of section 10).
+   The colours come from the --lava-* variables in the design tokens. */
 .lava {
   position: fixed;
   inset: 0;
@@ -465,20 +529,115 @@ button.btn { align-self: flex-start; border: 0; font: inherit; font-size: 16px; 
 }
 .lava__canvas--left {
   left: 0;
-  -webkit-mask-image: linear-gradient(to right, #000 55%, transparent);
-  mask-image: linear-gradient(to right, #000 55%, transparent);
+  -webkit-mask-image: linear-gradient(to right, var(--lava-fade));
+  mask-image: linear-gradient(to right, var(--lava-fade));
 }
 .lava__canvas--right {
   right: 0;
-  -webkit-mask-image: linear-gradient(to left, #000 55%, transparent);
-  mask-image: linear-gradient(to left, #000 55%, transparent);
+  -webkit-mask-image: linear-gradient(to left, var(--lava-fade));
+  mask-image: linear-gradient(to left, var(--lava-fade));
 }
 
 /* ---------- 10. Responsive / accessibility ---------- */
+/* ---------- Full-page lava lamp (1440px and narrower) ----------
+   Below this width the page margins are under ~120px, too small to show the lava, so the lamp
+   moves behind the whole site instead (phones, tablets and small laptops). One canvas covers the
+   page and the right canvas is switched off. It is dimmed well down (24% opacity) so text stays
+   readable, the content panels and footer are only slightly see-through so the lava still glows
+   behind them, the skill pills share the project cards' fill, and the secondary text colours are brightened to
+   compensate. indexscript.js detects the full-width canvas by itself and switches the lamp to its
+   full-screen mode. */
+@media (max-width: 1439px) {
+  .lava__canvas--right { display: none; }
+  .lava__canvas--left {
+    width: 100%;
+    opacity: 0.24;                              /* dimmed so text and panels keep strong contrast */
+    filter: brightness(0.85);                   /* and a little darker */
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  :root {
+    --surface: rgba(36, 40, 38, 0.92);
+    --text-muted: #c4ccc7;
+    --text-faint: #a3ada8;
+  }
+  .site-footer { background: rgba(22, 25, 24, 0.88); }
+
+  /* Skill pills: the same fill as the project cards (--surface) so they contrast with the lava.
+     The selected pill keeps its green tint, layered over that same fill. */
+  .pill { background-color: var(--surface); }
+  .pill[aria-pressed="true"] {
+    background-image: linear-gradient(rgba(127, 184, 150, 0.16), rgba(127, 184, 150, 0.16));
+    background-color: var(--surface);
+  }
+}
+
+/* ---------- Mobile (600px and narrower) ---------- */
 @media (max-width: 600px) {
   .container { padding-left: 20px; padding-right: 20px; }
-  .hero { gap: 40px; padding-top: 40px; }
-  .nav { gap: 20px; }
+  [id] { scroll-margin-top: 120px; }            /* the stacked header is taller, so anchors need more room */
+
+  /* Header: logo above the nav, both centred, tighter vertically */
+  .site-header__inner {
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+  .nav { justify-content: center; gap: 20px; }
+
+  /* Hero: one column with all content centred */
+  .hero {
+    grid-template-columns: minmax(0, 1fr);      /* the 340px minimum would overflow small phones */
+    gap: 28px;
+    padding-top: 24px;
+    text-align: center;
+  }
+  .hero__tagline { margin-bottom: 12px; }
+  .hero h1 { margin-bottom: 16px; }
+  .hero__summary { margin: 0 auto 24px; }
+  .hero__actions,
+  .hero .social { justify-content: center; }
+  .hero .social { margin-top: 20px; }
+
+  /* Code card: much shorter. Swap in the 3-line snippet, tighten spacing, keep text left-aligned */
+  .code-card { padding: 16px; font-size: 12px; line-height: 1.6; text-align: left; }
+  .code-card__dots { margin-bottom: 10px; }
+  .code--full { display: none; }
+  .code--compact { display: block; }
+
+  /* Contact form: a smaller box */
+  .contact-form { padding: 18px; gap: 12px; }
+  .field label { margin-bottom: 4px; font-size: 12px; }
+  .field input,
+  .field textarea { padding: 9px 12px; }
+  .field textarea { height: 88px; min-height: 88px; }
+  button.btn { padding: 11px 22px; }
+
+  /* Footer: stacked and centred instead of wrapping unevenly */
+  .site-footer__inner {
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+    padding-top: 24px;
+    padding-bottom: 24px;
+    text-align: center;
+  }
+  .site-footer .logo { display: block; margin-bottom: 4px; }
+  .site-footer .social { justify-content: center; gap: 8px 20px; }
+  .site-footer .social a { overflow-wrap: anywhere; }   /* a long email address can't push the page wider */
+
+  /* Smaller gaps between sections (the desktop spacing is too generous on a phone) */
+  .hero    { padding-bottom: 16px; }
+  .stack   { padding-top: 0; padding-bottom: 20px; }
+  .work    { padding-bottom: 28px; }
+  .contact { padding-bottom: 32px; }
+  .about   { padding-bottom: 28px; }
+  .label   { margin-bottom: 10px; font-size: 18px; }
+  .pills   { gap: 8px; }
+  .contact__grid { gap: 20px; }
+  .contact__lead { margin-bottom: 16px; }
 }
 
 /* Respect users who prefer no motion (this design has none, so this is a safeguard) */
