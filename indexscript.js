@@ -2,6 +2,7 @@
    Portfolio landing page – JavaScript (motion)
    1. Sticky header state   2. Code typing effect
    3. Work card reveal      4. Active nav link
+   5. Stack pill toggles
    Everything respects "prefers-reduced-motion".
    ========================================================== */
 (() => {
@@ -12,7 +13,7 @@
 
   /* ---------- 1. Sticky header state ----------
      Adds .is-scrolled once the page moves, which the CSS uses to
-     show the frosted background and shrink the bar. */
+     show the frosted background. */
   const header = document.querySelector('.site-header');
   const updateHeader = () => header.classList.toggle('is-scrolled', window.scrollY > 20);
   updateHeader();
@@ -109,4 +110,19 @@
     if (!spyQueued) { spyQueued = true; requestAnimationFrame(updateSpy); }
   }, { passive: true });
   updateSpy();
+
+  /* ---------- 5. Stack pill toggles ----------
+     Clicking a pill selects or unselects it; any number can be selected.
+     The chosen technologies are kept in selectedStack. Filtering the work
+     cards is NOT implemented yet: it will read selectedStack where marked below. */
+  const selectedStack = new Set();
+  document.querySelectorAll('.pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      const isOn = pill.getAttribute('aria-pressed') !== 'true';
+      pill.setAttribute('aria-pressed', String(isOn));   // drives the CSS and screen readers
+      if (isOn) selectedStack.add(pill.dataset.tech);
+      else selectedStack.delete(pill.dataset.tech);
+      // TODO: filter the work cards using selectedStack
+    });
+  });
 })();
