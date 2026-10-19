@@ -34,8 +34,10 @@
 
   <!-- Animated "lava lamp" background: two canvases, one in each page margin outside the
        content column. indexscript.js (section 7) draws wax-like blobs that heat, rise, cool,
-       sink, merge and split. Purely decorative (aria-hidden); sized and faded in
-       indexstyles.css (section 9c). -->
+       sink, merge and split. At 1440px and narrower (phones, tablets, small laptops) the margins
+       are too small, so the left canvas covers the whole page at low opacity and the right one
+       is hidden. Purely decorative (aria-hidden); sized and faded in indexstyles.css
+       (section 9c and the 1440px block in section 10). -->
   <div class="lava" aria-hidden="true">
     <canvas class="lava__canvas lava__canvas--left"></canvas>
     <canvas class="lava__canvas lava__canvas--right"></canvas>
@@ -86,12 +88,17 @@
            are listed in the Stack section, so screen readers skip this card. -->
       <figure class="code-card" aria-hidden="true">
         <div class="code-card__dots" aria-hidden="true"><span></span><span></span><span></span></div>
-<pre><code><span class="kw">var</span> app = WebApplication.CreateBuilder(args).Build();
+<!-- Full snippet for tablets and desktops -->
+<pre class="code--full"><code><span class="kw">var</span> app = WebApplication.CreateBuilder(args).Build();
 
 app.<span class="fn">MapGet</span>("/skills", () =&gt; <span class="kw">new</span>[] {
     "C#", "HTML/CSS/JS", "ASP.NET Core", "JavaScript", "SQL",
     "Python"
 });</code></pre>
+<!-- Shorter 3-line snippet shown instead on mobile (the CSS swaps the two) -->
+<pre class="code--compact"><code><span class="kw">var</span> app = WebApplication.Create();
+app.<span class="fn">MapGet</span>("/skills", () =&gt;
+    "C#, .NET, SQL, JS");</code></pre>
       </figure>
     </section>
 
@@ -176,11 +183,12 @@ app.<span class="fn">MapGet</span>("/skills", () =&gt; <span class="kw">new</spa
          The form builds an email and opens the visitor's email app (see section 6 in indexscript.js).
          The action attribute is the same idea for visitors with JavaScript off. -->
     <section class="contact container" id="contact" aria-labelledby="contact-title">
-      <h2 class="label" id="contact-title">// Contact</h2>
       <div class="contact__grid">
 
-        <!-- Left: short pitch and direct links -->
+        <!-- Left: heading, short pitch and direct links (the heading sits here so that, in the
+             two-column layout, it lines up with the top of the form) -->
         <div class="contact__intro">
+          <h2 class="label" id="contact-title">// Contact</h2>
           <p class="contact__lead">Have a project in mind, or want to work together? Send me a message.</p>
           <ul class="social">
             <li><a href="mailto:glur.studios@gmail.com">glur.studios@gmail.com</a></li>
