@@ -1,0 +1,11 @@
+# Cloudflare Pages configuration for glursolutions.com
+# Because pages_build_output_dir is set, this file is the source of truth for the project's
+# bindings (so don't also add the D1 binding in the dashboard).
+name = "glursolutions"
+pages_build_output_dir = "."
+compatibility_date = "2026-10-01"
+
+[[d1_databases]]
+binding = "DB"                          # how the function refers to it: env.DB
+database_name = "glur-db"
+database_id = "PASTE-DATABASE-ID-HERE"  # printed by: npx wrangler d1 create glur-db (not a secret)
