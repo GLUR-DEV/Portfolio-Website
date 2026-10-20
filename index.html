@@ -114,7 +114,7 @@ app.<span class="fn">MapGet</span>("/skills", () =&gt;
     </section>
 
     <!-- ===== WORK: project cards =====
-         Each card lists up to 3 tags. A tag's data-tech must match a stack pill's data-tech
+         Each card links to its project page (projects.html?project=...) and lists up to 3 tags. A tag's data-tech must match a stack pill's data-tech
          (html-css-js, csharp, dotnet, sql). When pills are selected, only cards with at
          least one matching tag are shown. The tags below are placeholders. -->
     <section class="work container" id="work" aria-labelledby="work-title">
@@ -126,57 +126,64 @@ app.<span class="fn">MapGet</span>("/skills", () =&gt;
       <div class="cards">
         <article class="card">
           <div class="card__image" role="img" aria-label="[PROJECT ONE] screenshot"></div>
-          <h3>[PROJECT ONE]</h3>
+          <h3><a class="card__link" href="projects.html?project=one">[PROJECT ONE]</a></h3>
           <p>[Short description and tech used]</p>
           <ul class="card__tags" aria-label="Technologies used">
             <li data-tech="csharp">C#</li>
             <li data-tech="dotnet">.NET</li>
             <li data-tech="sql">SQL</li>
           </ul>
+          <p class="card__cta" aria-hidden="true">View project <span>&rarr;</span></p>
         </article>
         <article class="card">
           <div class="card__image" role="img" aria-label="[PROJECT TWO] screenshot"></div>
-          <h3>[PROJECT TWO]</h3>
+          <h3><a class="card__link" href="projects.html?project=two">[PROJECT TWO]</a></h3>
           <p>[Short description and tech used]</p>
           <ul class="card__tags" aria-label="Technologies used">
             <li data-tech="html-css-js">HTML / CSS / JS</li>
             <li data-tech="csharp">C#</li>
           </ul>
+          <p class="card__cta" aria-hidden="true">View project <span>&rarr;</span></p>
         </article>
         <article class="card">
           <div class="card__image" role="img" aria-label="[PROJECT THREE] screenshot"></div>
-          <h3>[PROJECT THREE]</h3>
+          <h3><a class="card__link" href="projects.html?project=three">[PROJECT THREE]</a></h3>
           <p>[Short description and tech used]</p>
           <ul class="card__tags" aria-label="Technologies used">
             <li data-tech="dotnet">.NET</li>
           </ul>
+          <p class="card__cta" aria-hidden="true">View project <span>&rarr;</span></p>
         </article>
         <article class="card">
-          <div class="card__image" role="img" aria-label="[PROJECT ONE] screenshot"></div>
-          <h3>[PROJECT FOUR]</h3>
+          <div class="card__image" role="img" aria-label="[PROJECT FOUR] screenshot"></div>
+          <h3><a class="card__link" href="projects.html?project=four">[PROJECT FOUR]</a></h3>
           <p>[Short description and tech used]</p>
           <ul class="card__tags" aria-label="Technologies used">
             <li data-tech="sql">SQL</li>
           </ul>
+          <p class="card__cta" aria-hidden="true">View project <span>&rarr;</span></p>
         </article>
         <article class="card">
-          <div class="card__image" role="img" aria-label="[PROJECT TWO] screenshot"></div>
-          <h3>[PROJECT FIVE]</h3>
+          <div class="card__image" role="img" aria-label="[PROJECT FIVE] screenshot"></div>
+          <h3><a class="card__link" href="projects.html?project=five">[PROJECT FIVE]</a></h3>
           <p>[Short description and tech used]</p>
           <ul class="card__tags" aria-label="Technologies used">
             <li data-tech="html-css-js">HTML / CSS / JS</li>
             <li data-tech="csharp">C#</li>
           </ul>
+          <p class="card__cta" aria-hidden="true">View project <span>&rarr;</span></p>
         </article>
         <article class="card">
-          <div class="card__image" role="img" aria-label="[PROJECT THREE] screenshot"></div>
-          <h3>[PROJECT SIX]</h3>
+          <div class="card__image" role="img" aria-label="[PROJECT SIX] screenshot"></div>
+          <h3><a class="card__link" href="projects.html?project=six">[PROJECT SIX]</a></h3>
           <p>[Short description and tech used]</p>
           <ul class="card__tags" aria-label="Technologies used">
             <li data-tech="dotnet">C#</li>
           </ul>
+          <p class="card__cta" aria-hidden="true">View project <span>&rarr;</span></p>
         </article>
       </div>
+
     </section>
 
     <!-- ===== CONTACT: intro, direct links and a message form =====
