@@ -3,7 +3,7 @@
    1. Sticky header state   2. Code typing effect (one window, three stacked on wide screens)
    3. Work card reveal      4. Active nav link
    5. Stack pill toggles, project filtering and the mobile project limit
-   6. Contact form (opens the visitor's email app)
+   6. Contact form (sends the message to the server, which stores it in the D1 database)
    7. Lava lamp background (canvas metaballs)
    Everything respects "prefers-reduced-motion".
    This file is shared by index.html and projects.html, so each part skips itself when the
@@ -208,25 +208,41 @@
   });
 
   /* ---------- 6. Contact form ----------
-     On submit this builds a mailto: link (subject and body
-     filled in) and opens the visitor's email app. The address comes from the form's
-     data-email attribute. Native validation (required fields, valid email) runs first. */
+     On submit the form is sent as JSON to /api/contact. That is a Cloudflare Pages Function
+     (functions/api/contact.js) which checks the message and saves it in the D1 database.
+     Native validation (required fields, valid email) runs first. The hidden "website" field is a
+     honeypot for bots; a real visitor never fills it in. If sending fails, the status line points
+     visitors to the email address so no message is lost. */
   const form = document.querySelector('.contact-form');
   if (form) {
     const formStatus = form.querySelector('.form__status');
-    form.addEventListener('submit', event => {
+    const submitBtn = form.querySelector('button[type="submit"]');
+    form.addEventListener('submit', async event => {
       event.preventDefault();
       const data = new FormData(form);
-      const name = String(data.get('name')).trim();
-      const email = String(data.get('email')).trim();
-      const message = String(data.get('message')).trim();
 
-      const subject = `Website enquiry from ${name}`;
-      const body = `${message}\n\n${name}\n${email}`;
-      window.location.href =
-        `mailto:${form.dataset.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      submitBtn.disabled = true;               // stops double submissions
+      formStatus.textContent = 'Sending…';
 
-      formStatus.textContent = `Opening your email app. If nothing opens, email ${form.dataset.email} directly.`;
+      try {
+        const res = await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: String(data.get('name')).trim(),
+            email: String(data.get('email')).trim(),
+            message: String(data.get('message')).trim(),
+            website: String(data.get('website') || '')   // honeypot (empty for real visitors)
+          })
+        });
+        if (!res.ok) throw new Error('Request failed');
+        form.reset();
+        formStatus.textContent = 'Thanks! Your message has been sent.';
+      } catch {
+        formStatus.textContent = `Something went wrong. Please email ${form.dataset.email} directly.`;
+      } finally {
+        submitBtn.disabled = false;
+      }
     });
   }
 
