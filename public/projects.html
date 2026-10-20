@@ -21,14 +21,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <!-- Same JS-enabled marker and 3-second fallback as index.html -->
+  <!-- Same JS-enabled marker and 6-second fallback as index.html -->
   <script>
     document.documentElement.classList.add('js');
     setTimeout(function () {
       if (!document.documentElement.classList.contains('js-ready')) {
         document.documentElement.classList.remove('js');
       }
-    }, 3000);
+    }, 6000);
   </script>
 
   <link rel="stylesheet" href="indexstyles.css">
@@ -1130,8 +1130,7 @@
   </footer>
 
   <!-- Header scroll state, lava lamp (indexscript.js) and the project picker and slideshows (projectsscript.js) -->
-  <script src="indexscript.js" defer></script>
-  <script src="projectsscript.js" defer></script>
+  <script src="content.js" data-then="indexscript.js projectsscript.js" defer></script>
 
 </body>
 </html>
