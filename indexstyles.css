@@ -345,10 +345,12 @@ ul { margin: 0; padding: 0; list-style: none; }
 }
 .work__status:empty { display: none; }
 
+
 /* Cards removed by the stack filter */
 .card[hidden] { display: none; }
 
 .card {
+  position: relative;                  /* anchors the whole-card link below */
   padding: 28px;
   background: var(--surface);
   border: 1px solid transparent;       /* reserved so the hover border doesn't shift layout */
@@ -370,6 +372,26 @@ ul { margin: 0; padding: 0; list-style: none; }
   transition: background-color 0.3s ease;
 }
 .card h3 { margin: 0 0 8px; font-size: 22px; }
+
+/* The whole card is one link to its project page: the title link stretches over the card
+   (a single link per card keeps keyboard and screen reader use simple) */
+.card__link { color: inherit; transition: color 0.2s ease; }
+.card__link::after { content: ""; position: absolute; inset: 0; border-radius: var(--radius-md); }
+.card__link:focus-visible { outline: none; }
+.card__link:focus-visible::after { outline: 2px solid var(--green); outline-offset: 3px; }
+.card:hover .card__link,
+.card:focus-within .card__link { color: var(--green); }
+
+/* "View project" cue at the bottom of each card (decorative; the title link does the work) */
+.card .card__cta {                 /* .card prefix so it beats the general .card p rule */
+  margin: 18px 0 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--green);
+}
+.card__cta span { display: inline-block; transition: transform 0.2s ease; }
+.card:hover .card__cta span,
+.card:focus-within .card__cta span { transform: translateX(5px); }
 .card p  { margin: 0; color: var(--text-muted); }
 
 /* Project tags (up to 3 per card); a tag matching a selected stack pill turns green */
