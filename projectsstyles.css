@@ -2,9 +2,10 @@
    Projects page – CSS (loaded after indexstyles.css, which holds the design tokens,
    header, footer, buttons, tags and the lava lamp)
    Sections:
-   1. Back link               2. Project heading   3. Project layout
+   1. Back link               2. Project heading and off-site button   3. Project layout
    4. Slideshow               5. Placeholder pictures
-   6. Side panel              7. Next steps        8. Responsive
+   6. Side panel              7. Next steps        8. Enlarged picture
+   9. Responsive
    ========================================================== */
 
 /* ---------- 1. Back link ---------- */
@@ -38,16 +39,57 @@
 .project__head p { margin: 0; font-size: 20px; line-height: 1.6; color: var(--text-muted); }
 .project__head .card__tags { margin-top: 18px; }
 
-/* Slideshow wider than the side panel; the second row swaps sides for rhythm */
+/* "Check this project out" button: leaves the site, so it opens in a new tab and shows an arrow
+   that nudges up and to the right on hover or keyboard focus */
+.project__actions { margin-top: 22px; }
+.btn--external {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.25s ease;
+}
+.btn--external::after {
+  content: "\2197";
+  content: "\2197" / "";                          /* empty alt text so screen readers skip the arrow */
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+.btn--external:hover,
+.btn--external:focus-visible { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(127, 184, 150, 0.28); }
+.btn--external:hover::after,
+.btn--external:focus-visible::after { transform: translate(3px, -3px); }
+.btn--external:active { transform: scale(0.97); }
+
+/* Slideshow wider than the side panel; the second row swaps sides for rhythm.
+   Each row is a two-row grid: row 1 holds the heading above the slideshow, row 2 holds the slideshow
+   card and the side panel, so the panel's top edge lines up with the top of the slideshow card.
+   (.project__col is display: contents, so its heading and slideshow join the grid directly.) */
 .project__grid {
   display: grid;
   grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
-  gap: 28px;
+  grid-template-rows: auto 1fr;
+  column-gap: 28px;
+  row-gap: 0;
   align-items: start;
 }
-.project__grid + .project__grid { margin-top: 40px; }
 .project__grid--flip { grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr); }
-.project__grid--flip .project__col { order: 2; }
+.project__col { display: contents; }
+.project__col > .mini-label,
+.project__col > .slideshow { grid-column: 1; }
+.project__col > .mini-label { grid-row: 1; }
+.project__col > .slideshow { grid-row: 2; }
+.project__aside { grid-column: 2; grid-row: 2; }
+.project__grid--flip .project__col > .mini-label,
+.project__grid--flip .project__col > .slideshow { grid-column: 2; }
+.project__grid--flip .project__aside { grid-column: 1; }
+.project__grid + .project__grid { margin-top: 40px; }
+
+/* Larger headings above the slideshows (the smaller // labels inside the side panels stay small) */
+.project__col > .mini-label {
+  margin: 0 0 16px;
+  font-size: 22px;
+  color: var(--text-muted);
+}
 
 /* ---------- 4. Slideshow ----------
    Without JavaScript the slides simply stack as a list of pictures. projectsscript.js adds
@@ -57,7 +99,7 @@
   border-radius: var(--radius-md);
   overflow: hidden;
 }
-.slideshow__viewport { overflow: hidden; touch-action: pan-y; }   /* vertical scroll still works while swiping */
+.slideshow__viewport { position: relative; overflow: hidden; touch-action: pan-y; }   /* vertical scroll still works while swiping */
 .slideshow__viewport:focus-visible { outline-offset: -3px; }
 .slideshow__track { display: block; }
 .slide + .slide { margin-top: 8px; }
@@ -67,6 +109,41 @@
   transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .slideshow.is-ready .slide { flex: 0 0 100%; min-width: 0; margin-top: 0; }
+.slideshow.is-ready .slide__image { cursor: zoom-in; }   /* click a picture to enlarge it */
+
+/* Pause and enlarge buttons over the top right of the picture (added by projectsscript.js) */
+.slideshow__tools { position: absolute; top: 12px; right: 12px; z-index: 2; display: flex; gap: 8px; }
+.slideshow__tool {
+  width: 40px; height: 40px;
+  display: grid; place-items: center;
+  background: rgba(20, 22, 21, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+.slideshow__tool:hover,
+.slideshow__tool:focus-visible { background: var(--green); border-color: var(--green); color: var(--green-ink); }
+.slideshow__tool:active { transform: scale(0.92); }
+.slideshow__tool svg { display: block; }
+
+/* Thin bar along the bottom of the slide area that fills over 5 seconds, then the slideshow moves on.
+   The slideshow advances when this animation ends, so pausing it (play-state) pauses the slideshow.
+   Change --autoplay to change the delay. */
+.slideshow__progress {
+  --autoplay: 5s;
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 3px;
+  background: var(--green);
+  transform-origin: left center;
+  transform: scaleX(0);
+  animation: slideshow-progress var(--autoplay) linear forwards;
+}
+@keyframes slideshow-progress { to { transform: scaleX(1); } }
 
 .slide__image {
   display: block;
@@ -115,7 +192,7 @@
   color: var(--green);
 }
 
-.slideshow__nav { display: flex; align-items: center; gap: 8px; }
+.slideshow__nav { display: flex; align-items: center; gap: 8px; margin-left: auto; }   /* stays on the right, even when it wraps under the stage buttons */
 .slideshow__count { margin: 0; min-width: 3.5em; text-align: center; font-family: var(--font-mono); font-size: 14px; color: var(--text-muted); }
 .arrow {
   width: 44px; height: 44px;                    /* comfortable touch target */
@@ -206,11 +283,70 @@
 .next { padding-bottom: 96px; }
 .next .contact__lead { margin-bottom: 24px; }
 
-/* ---------- 8. Responsive ---------- */
+/* ---------- 8. Enlarged picture ----------
+   Built by projectsscript.js when a slideshow picture is clicked. The picture grows from where it
+   was (animated in the script), the page behind dims and blurs, and the page can't scroll. */
+html.lb-open { overflow: hidden; }
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.lightbox[hidden] { display: none; }
+.lightbox__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 12, 11, 0.88);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.lightbox__panel { position: relative; display: flex; flex-direction: column; gap: 16px; max-width: 100%; }
+.lightbox__pic {
+  width: min(calc(100vw - 40px), calc((100vh - 190px) * 1.6));   /* keeps the 16:10 shape on any screen */
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  cursor: zoom-out;
+}
+.lightbox__pic:has(img.slide__image) { width: auto; }              /* a real screenshot keeps its own shape */
+.lightbox__pic img.slide__image {
+  width: auto; max-width: 100%;
+  height: auto; max-height: calc(100vh - 190px);
+  aspect-ratio: auto;
+  object-fit: contain;
+  cursor: zoom-out;
+}
+.lightbox__bar { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.lightbox .slide__caption { padding: 0; }
+.lightbox__nav { display: flex; align-items: center; gap: 8px; flex: none; }
+.lightbox__close { position: absolute; top: 16px; right: 16px; z-index: 2; }
+
+/* ---------- 9. Responsive ---------- */
 @media (max-width: 900px) {
   .project__grid,
-  .project__grid--flip { grid-template-columns: minmax(0, 1fr); }
-  .project__grid--flip .project__col { order: 0; }
+  .project__grid--flip { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; }
+  .project__col > .mini-label,
+  .project__col > .slideshow,
+  .project__aside,
+  .project__grid--flip .project__col > .mini-label,
+  .project__grid--flip .project__col > .slideshow,
+  .project__grid--flip .project__aside { grid-column: 1; grid-row: auto; }
+  .project__aside { margin-top: 20px; }
+
+  /* Once the side box stacks under the slideshow it gets a more compact look: smaller text, labels,
+     spacing and padding, but every line of information stays */
+  .project__aside { padding: 16px 18px; font-size: 14px; line-height: 1.45; }
+  .project__aside .mini-label { margin-bottom: 10px; font-size: 12px; }
+  .aside__text { margin-bottom: 16px; }
+  .improve { gap: 10px; margin-bottom: 18px; }
+  .improve li { padding-left: 12px; }
+  .facts { gap: 8px; }
+  .facts div { gap: 12px; }
+  .facts dt { font-size: 12px; }
 }
 
 @media (max-width: 600px) {
@@ -221,15 +357,27 @@
   .project__grid + .project__grid { margin-top: 24px; }
   .project__head p { font-size: 17px; }
   .project__head .card__tags { margin-top: 12px; }
-  .project__grid { gap: 16px; }
-  .aside__text { margin-bottom: 22px; }
+  .project__actions { margin-top: 16px; }
+  .project__col > .mini-label { font-size: 18px; margin-bottom: 12px; }
+  .project__aside { margin-top: 14px; }
+  .aside__text { margin-bottom: 14px; }
+  .lightbox { padding: 12px; }
+  .lightbox__bar { flex-direction: column; gap: 14px; }
+  .lightbox__pic { width: min(calc(100vw - 24px), calc((100vh - 230px) * 1.6)); }
   .slide__caption { padding: 16px 18px 6px; }
   .slide__caption h3 { font-size: 19px; }
   .slideshow__controls { padding: 12px 18px 18px; gap: 12px; }
   .slideshow__nav { width: 100%; justify-content: space-between; }   /* arrows at either edge, counter between */
   .step { padding: 6px 12px; font-size: 12px; }
-  .project__aside { padding: 18px; }
-  .improve { gap: 12px; margin-bottom: 22px; }
+  .project__aside { padding: 14px 16px; }
+  .improve { gap: 8px; margin-bottom: 14px; }
   .next { padding-bottom: 48px; }
   .next .contact__lead { margin-bottom: 18px; }
+}
+
+/* People who ask their device for less motion get no automatic movement: the script doesn't start
+   it, and the bar and pause button are hidden. */
+@media (prefers-reduced-motion: reduce) {
+  .slideshow__progress,
+  .slideshow__play { display: none; }
 }
