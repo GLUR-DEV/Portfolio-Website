@@ -1,14 +1,16 @@
 /* ==========================================================
-   Contact form endpoint: POST /api/contact
-   Cloudflare Pages runs this file on its servers (not in the visitor's browser).
-   The file path decides the URL: functions/api/contact.js -> /api/contact.
-   It receives the form as JSON, checks it, and saves it to the D1 database.
+   Contact form server code: POST /api/contact
+   This runs on Cloudflare's servers (not in the visitor's browser). wrangler.toml sets
+   run_worker_first = ["/api/*"], so only requests to /api/... reach this file; every other
+   request (the pages, CSS and JS in public/) is served directly as static files.
+   The form arrives as JSON, is checked here, then saved to the D1 database.
    env.DB is the D1 binding declared in wrangler.toml.
    ========================================================== */
 
-const json = (body, status = 200) => Response.json(body, { status });
+const json = (body, status = 200, headers = {}) =>
+  Response.json(body, { status, headers });
 
-export async function onRequestPost({ request, env }) {
+async function handleContact(request, env) {
   // 1. Read the JSON body (reject anything that isn't valid JSON)
   let body;
   try {
@@ -50,7 +52,18 @@ export async function onRequestPost({ request, env }) {
   return json({ ok: true });
 }
 
-// Any other method (GET, PUT...) on this URL is refused
-export async function onRequest() {
-  return json({ ok: false, error: 'Method not allowed' }, 405);
-}
+export default {
+  async fetch(request, env) {
+    const { pathname } = new URL(request.url);
+
+    if (pathname === '/api/contact') {
+      if (request.method === 'POST') return handleContact(request, env);
+      return json({ ok: false, error: 'Method not allowed' }, 405, { Allow: 'POST' });
+    }
+
+    if (pathname.startsWith('/api/')) return json({ ok: false, error: 'Not found' }, 404);
+
+    // Safety net: anything else is passed to the static files in public/
+    return env.ASSETS.fetch(request);
+  }
+};

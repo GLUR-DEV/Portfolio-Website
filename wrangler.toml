@@ -1,11 +1,21 @@
-# Cloudflare Pages configuration for glursolutions.com
-# Because pages_build_output_dir is set, this file is the source of truth for the project's
-# bindings (so don't also add the D1 binding in the dashboard).
+# Cloudflare Worker (with static assets) configuration for glursolutions.com
+
+# IMPORTANT: this must match the name of your Worker in the Cloudflare dashboard
+# (Workers & Pages > click your project > the name at the top). If it differs, change it here.
 name = "glursolutions"
-pages_build_output_dir = "."
+
+main = "src/worker.js"                  # server code (the contact form endpoint)
 compatibility_date = "2026-10-01"
 
+[assets]
+directory = "./public"                  # the website files; only this folder is public
+binding = "ASSETS"
+run_worker_first = ["/api/*"]           # only /api/... runs worker.js; everything else is served as files
+
 [[d1_databases]]
-binding = "DB"                          # how the function refers to it: env.DB
+binding = "DB"                          # how the code refers to it: env.DB
 database_name = "glur-db"
-database_id = "37f35d65-1d1d-4791-8525-4940048743e5"  # printed by: npx wrangler d1 create glur-db
+database_id = "37f35d65-1d1d-4791-8525-4940048743e5"  # printed by: npx wrangler d1 create glur-db (not a secret)
+
+[observability]
+enabled = true                          # lets you see errors/logs in the dashboard
