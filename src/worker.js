@@ -108,6 +108,58 @@ async function handleContact(request, env, ctx) {
   }
 }
 
+/* ---------- Site content: GET /api/technologies, /api/projects, /api/projects/<slug> ----------
+   The pages' content lives in the ASP.NET admin app's Azure SQL database. A small hosted API
+   (env.API_ORIGIN) reads it; this Worker calls that API from the server side, so the browser only ever
+   talks to glursolutions.com (no CORS) and the API key (env.API_KEY, a secret) never reaches the browser.
+
+   Answers are kept in Cloudflare's cache: fresh for 60 seconds, then refreshed from the API. If the API
+   or database is asleep or down, the last good answer (up to a day old) is served instead, so the site
+   keeps working. Only these exact paths are forwarded, nothing else. */
+const CONTENT_PATH = /^\/api\/(technologies|projects(\/[A-Za-z0-9_-]{1,80})?)$/;
+const FRESH_SECONDS = 60;
+const KEEP_SECONDS = 86400;
+
+const contentResponse = (body, status = 200) =>
+  new Response(body, {
+    status,
+    headers: { 'Content-Type': 'application/json', 'Cache-Control': `public, max-age=${FRESH_SECONDS}` }
+  });
+
+async function handleContent(request, env, ctx, pathname) {
+  if (request.method !== 'GET') return json({ ok: false, error: 'Method not allowed' }, 405, { Allow: 'GET' });
+  if (!env.API_ORIGIN) return json({ ok: false, error: 'Content is not configured' }, 503);
+
+  const cache = caches.default;
+  const cacheKey = new Request(new URL(pathname, request.url).toString(), { method: 'GET' });
+  const cached = await cache.match(cacheKey);
+  const ageSeconds = cached ? (Date.now() - Number(cached.headers.get('X-Cached-At') || 0)) / 1000 : Infinity;
+  if (cached && ageSeconds < FRESH_SECONDS) return contentResponse(await cached.text());
+
+  try {
+    const origin = await fetch(`${env.API_ORIGIN}${pathname}`, {
+      headers: { Accept: 'application/json', 'X-Api-Key': env.API_KEY || '' },
+      signal: AbortSignal.timeout(8000)
+    });
+    if (origin.status === 404) return json({ ok: false, error: 'Not found' }, 404);
+    if (!origin.ok) throw new Error(`API answered ${origin.status}`);
+
+    const body = await origin.text();
+    ctx.waitUntil(cache.put(cacheKey, new Response(body, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': `public, max-age=${KEEP_SECONDS}`,   // how long Cloudflare may keep it as the fallback copy
+        'X-Cached-At': String(Date.now())
+      }
+    })));
+    return contentResponse(body);
+  } catch (err) {
+    console.error('Content API failed:', err);
+    if (cached) return contentResponse(await cached.text());   // serve the last good copy
+    return json({ ok: false, error: 'Content is unavailable right now' }, 502);
+  }
+}
+
 export default {
   async fetch(request, env, ctx) {
     const { pathname } = new URL(request.url);
@@ -116,6 +168,8 @@ export default {
       if (request.method === 'POST') return handleContact(request, env, ctx);
       return json({ ok: false, error: 'Method not allowed' }, 405, { Allow: 'POST' });
     }
+
+    if (CONTENT_PATH.test(pathname)) return handleContent(request, env, ctx, pathname);
 
     if (pathname.startsWith('/api/')) return json({ ok: false, error: 'Not found' }, 404);
 
