@@ -25,7 +25,7 @@ ALERT_FROM = "contact@glursolutions.com"
 
 # Where the hosted ASP.NET content API lives (the one reading the Azure SQL database). Change this to your
 # real address, e.g. https://api.glursolutions.com. The matching secret is set with: npx wrangler secret put API_KEY
-API_ORIGIN = "https://api.glursolutions.com"
+API_ORIGIN = "glursolutions-dtc3addjc8ajcpd2.australiaeast-01.azurewebsites.net"
 
 [[send_email]]
 name = "EMAIL"
