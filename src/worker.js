@@ -3,14 +3,30 @@
    This runs on Cloudflare's servers (not in the visitor's browser). wrangler.toml sets
    run_worker_first = ["/api/*"], so only requests to /api/... reach this file; every other
    request (the pages, CSS and JS in public/) is served directly as static files.
-   The form arrives as JSON, is checked here, then saved to the D1 database.
-   env.DB is the D1 binding declared in wrangler.toml.
+
+   For each message it: checks the fields, filters out fake/spam senders (src/filters.js), saves it
+   to the D1 database (env.DB) and emails you an alert (src/email.js).
    ========================================================== */
+
+import { MIN_MESSAGE_LENGTH, validateEmail, checkDomain, scoreSubmission } from './filters.js';
+import { sendAlert } from './email.js';
+
+const MAX_PER_HOUR = 5;   // messages allowed per visitor (by hashed IP) per hour
 
 const json = (body, status = 200, headers = {}) =>
   Response.json(body, { status, headers });
 
-async function handleContact(request, env) {
+/* A one-way hash of the visitor's IP, used only for rate limiting. The raw IP is never stored.
+   Returns null when there is no IP (e.g. local testing), which skips the rate limit. */
+async function hashIp(request, env) {
+  const ip = request.headers.get('CF-Connecting-IP');
+  if (!ip) return null;
+  const bytes = new TextEncoder().encode(`${env.IP_SALT || 'glur'}:${ip}`);
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
+}
+
+async function handleContact(request, env, ctx) {
   // 1. Read the JSON body (reject anything that isn't valid JSON)
   let body;
   try {
@@ -23,41 +39,81 @@ async function handleContact(request, env) {
   //    Reply "ok" so the bot thinks it worked, but save nothing.
   if (body.website) return json({ ok: true });
 
-  // 3. Clean and validate. Never trust the browser: the checks in the page can be bypassed.
+  // 3. Clean and check the basics. Never trust the browser: the checks in the page can be bypassed.
   const name = String(body.name || '').trim();
-  const email = String(body.email || '').trim();
   const message = String(body.message || '').trim();
+  const elapsedMs = Math.max(0, Number(body.elapsed) || 0);
 
-  const valid =
-    name && email && message &&
-    name.length <= 100 &&
-    email.length <= 200 &&
-    message.length <= 5000 &&
-    /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
-
-  if (!valid) return json({ ok: false, error: 'Invalid input' }, 400);
-
-  // 4. Save it. The ? placeholders and .bind() keep the values separate from the SQL,
-  //    which is what prevents SQL injection. Never build the SQL string from the values.
-  try {
-    await env.DB
-      .prepare('INSERT INTO messages (name, email, message) VALUES (?, ?, ?)')
-      .bind(name, email, message)
-      .run();
-  } catch (err) {
-    console.error('D1 insert failed:', err);
-    return json({ ok: false, error: 'Could not save message' }, 500);
+  if (!name || !message) return json({ ok: false, error: 'Please fill in every field.' }, 400);
+  if (name.length > 100 || message.length > 5000) {
+    return json({ ok: false, error: 'Your name or message is too long.' }, 400);
+  }
+  if (message.length < MIN_MESSAGE_LENGTH) {
+    return json({ ok: false, error: 'Please write a little more so I know how to help.' }, 400);
   }
 
-  return json({ ok: true });
+  // 4. Email address: format, throwaway/fake domains, then does the domain exist? (visitor sees the error)
+  const emailCheck = validateEmail(body.email);
+  if (!emailCheck.ok) return json({ ok: false, error: emailCheck.error }, 400);
+  const { email, domain } = emailCheck;
+
+  const mx = await checkDomain(domain);
+  if (mx === 'nxdomain') {
+    return json({ ok: false, error: "That email address's domain doesn't seem to exist. Please check it." }, 400);
+  }
+
+  try {
+    // 5. Rate limit and duplicates (looked up in the database)
+    const ipHash = await hashIp(request, env);
+    if (ipHash) {
+      const recent = await env.DB
+        .prepare("SELECT COUNT(*) AS n FROM messages WHERE ip_hash = ? AND created_at > datetime('now', '-1 hour')")
+        .bind(ipHash).first();
+      if (recent && recent.n >= MAX_PER_HOUR) {
+        return json({ ok: false, error: 'Too many messages in a short time. Please try again later.' }, 429);
+      }
+    }
+
+    const duplicate = await env.DB
+      .prepare("SELECT 1 FROM messages WHERE email = ? AND message = ? AND created_at > datetime('now', '-1 day') LIMIT 1")
+      .bind(email, message).first();
+    if (duplicate) return json({ ok: true });   // already received; don't save or alert twice
+
+    // 6. Score the submission: ok / review / spam
+    const { score, reasons, status } = scoreSubmission({ name, email, message, elapsedMs, mx });
+
+    // 7. Save it. The ? placeholders and .bind() keep the values separate from the SQL,
+    //    which is what prevents SQL injection. Never build the SQL string from the values.
+    const saved = await env.DB
+      .prepare('INSERT INTO messages (name, email, message, status, score, reasons, ip_hash) VALUES (?, ?, ?, ?, ?, ?, ?)')
+      .bind(name, email, message, status, score, reasons.join('; '), ipHash)
+      .run();
+    const id = saved.meta.last_row_id;
+
+    // 8. Email you about it (spam is saved but not emailed). waitUntil lets the visitor get their
+    //    reply straight away while the email finishes sending in the background.
+    if (status !== 'spam') {
+      ctx.waitUntil(
+        sendAlert(env, { id, name, email, message, status, score, reasons }).then(async sent => {
+          if (sent) await env.DB.prepare('UPDATE messages SET alerted = 1 WHERE id = ?').bind(id).run();
+        }).catch(err => console.error('Alert follow-up failed:', err))
+      );
+    }
+
+    // Spam gets the same "ok" reply, so spammers can't tell they were filtered
+    return json({ ok: true });
+  } catch (err) {
+    console.error('Contact form failed:', err);
+    return json({ ok: false, error: 'Could not save message' }, 500);
+  }
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const { pathname } = new URL(request.url);
 
     if (pathname === '/api/contact') {
-      if (request.method === 'POST') return handleContact(request, env);
+      if (request.method === 'POST') return handleContact(request, env, ctx);
       return json({ ok: false, error: 'Method not allowed' }, 405, { Allow: 'POST' });
     }
 

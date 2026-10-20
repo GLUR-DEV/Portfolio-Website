@@ -208,15 +208,21 @@
   });
 
   /* ---------- 6. Contact form ----------
-     On submit the form is sent as JSON to /api/contact. That is a Cloudflare Pages Function
-     (functions/api/contact.js) which checks the message and saves it in the D1 database.
-     Native validation (required fields, valid email) runs first. The hidden "website" field is a
-     honeypot for bots; a real visitor never fills it in. If sending fails, the status line points
-     visitors to the email address so no message is lost. */
+     On submit the form is sent as JSON to /api/contact (src/worker.js). The server filters out
+     fake addresses and spam, saves the message in the D1 database and emails an alert.
+     Native validation (required fields, valid email, length) runs first. Two things are sent to help
+     the filter: the hidden "website" honeypot (empty for real visitors) and "elapsed", the time in ms
+     from first clicking into the form to sending it (bots fill forms in instantly).
+     If the server rejects the message (bad email, too many messages) its reason is shown; if sending
+     fails for any other reason, the status line points visitors to the email address instead. */
   const form = document.querySelector('.contact-form');
   if (form) {
     const formStatus = form.querySelector('.form__status');
     const submitBtn = form.querySelector('button[type="submit"]');
+
+    let startedAt = null;                       // set when the visitor first clicks into the form
+    form.addEventListener('focusin', () => { if (!startedAt) startedAt = Date.now(); });
+
     form.addEventListener('submit', async event => {
       event.preventDefault();
       const data = new FormData(form);
@@ -232,12 +238,21 @@
             name: String(data.get('name')).trim(),
             email: String(data.get('email')).trim(),
             message: String(data.get('message')).trim(),
-            website: String(data.get('website') || '')   // honeypot (empty for real visitors)
+            website: String(data.get('website') || ''),            // honeypot
+            elapsed: startedAt ? Date.now() - startedAt : 0
           })
         });
-        if (!res.ok) throw new Error('Request failed');
-        form.reset();
-        formStatus.textContent = 'Thanks! Your message has been sent.';
+        const result = await res.json().catch(() => ({}));
+
+        if (res.ok) {
+          form.reset();
+          startedAt = null;
+          formStatus.textContent = 'Thanks! Your message has been sent.';
+        } else if ((res.status === 400 || res.status === 429) && result.error) {
+          formStatus.textContent = result.error;                    // e.g. "That email address doesn't look valid."
+        } else {
+          throw new Error('Request failed');
+        }
       } catch {
         formStatus.textContent = `Something went wrong. Please email ${form.dataset.email} directly.`;
       } finally {

@@ -17,5 +17,15 @@ binding = "DB"                          # how the code refers to it: env.DB
 database_name = "glur-db"
 database_id = "37f35d65-1d1d-4791-8525-4940048743e5"  # printed by: npx wrangler d1 create glur-db (not a secret)
 
+# Email alerts. ALERT_FROM must be an address on a domain set up in Cloudflare Email Service/Routing;
+# ALERT_TO must be a verified destination address there. The binding below is locked to that one address.
+[vars]
+ALERT_TO = "glur.studios@gmail.com"
+ALERT_FROM = "contact@glursolutions.com"
+
+[[send_email]]
+name = "EMAIL"
+destination_address = "glur.studios@gmail.com"
+
 [observability]
 enabled = true                          # lets you see errors/logs in the dashboard

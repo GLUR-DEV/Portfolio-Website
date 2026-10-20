@@ -211,8 +211,9 @@ app.<span class="fn">MapGet</span>("/skills", () =&gt;
     </section>
 
     <!-- ===== CONTACT: intro, direct links and a message form =====
-         With JavaScript on, the form is sent to /api/contact (functions/api/contact.js), which saves
-         the message in the Cloudflare D1 database (see section 6 in indexscript.js).
+         With JavaScript on, the form is sent to /api/contact (src/worker.js), which filters spam, saves
+         the message in the Cloudflare D1 database and emails an alert (see section 6 in indexscript.js).
+         The length limits below match the server's checks.
          The mailto: action is only the fallback for visitors with JavaScript off. -->
     <section class="contact container" id="contact" aria-labelledby="contact-title">
       <div class="contact__grid">
@@ -233,15 +234,15 @@ app.<span class="fn">MapGet</span>("/skills", () =&gt;
         <form class="contact-form" action="mailto:glur.studios@gmail.com" method="post" enctype="text/plain" data-email="glur.studios@gmail.com">
           <div class="field">
             <label for="contact-name">Name</label>
-            <input id="contact-name" name="name" type="text" autocomplete="name" required>
+            <input id="contact-name" name="name" type="text" autocomplete="name" maxlength="100" required>
           </div>
           <div class="field">
             <label for="contact-email">Email</label>
-            <input id="contact-email" name="email" type="email" autocomplete="email" required>
+            <input id="contact-email" name="email" type="email" autocomplete="email" maxlength="200" required>
           </div>
           <div class="field">
             <label for="contact-message">Message</label>
-            <textarea id="contact-message" name="message" rows="5" required></textarea>
+            <textarea id="contact-message" name="message" rows="5" minlength="10" maxlength="5000" required></textarea>
           </div>
           <!-- Honeypot: hidden from people (see .field--hp in the CSS), but bots fill it in.
                The server silently discards any message where it has a value. -->
@@ -282,7 +283,7 @@ app.<span class="fn">MapGet</span>("/skills", () =&gt;
     </div>
   </footer>
 
-  <!-- Header scroll state, code typing effect, card reveal, active nav link, stack filter, contact form (sent to the D1 database) and lava lamp -->
+  <!-- Header scroll state, code typing effect, card reveal, active nav link, stack filter, contact form (spam-filtered, saved to D1 and emailed) and lava lamp -->
   <script src="indexscript.js" defer></script>
 
 </body>
