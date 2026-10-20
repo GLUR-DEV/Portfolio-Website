@@ -6,6 +6,8 @@
    6. Contact form (opens the visitor's email app)
    7. Lava lamp background (canvas metaballs)
    Everything respects "prefers-reduced-motion".
+   This file is shared by index.html and projects.html, so each part skips itself when the
+   elements it needs aren't on the page (slideshows live in projectsscript.js).
    ========================================================== */
 (() => {
   // Tells the inline fallback in index.html that this script loaded
@@ -82,7 +84,7 @@
      35% down the screen. Scroll-based rather than observer-based so the short
      Stack section still gets its turn. Nothing is highlighted while the hero is
      in view, and the last section (About) stays lit once the page reaches the bottom. */
-  const links = document.querySelectorAll('.nav a');
+  const links = document.querySelectorAll('.nav a[href^="#"]');   // in-page links only (other pages' links are left alone)
   const spySections = ['stack', 'work', 'contact', 'about']      // in page order
     .map(id => document.getElementById(id))
     .filter(Boolean);
@@ -95,7 +97,7 @@
     spySections.forEach(section => {
       if (section.getBoundingClientRect().top <= line) current = section.id;
     });
-    const atBottom = window.scrollY > 0 &&
+    const atBottom = spySections.length > 0 && window.scrollY > 0 &&
       window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
     if (atBottom) current = spySections[spySections.length - 1].id;
 
@@ -119,7 +121,7 @@
      Filter rule: with nothing selected every project shows. Otherwise a project
      shows if ANY of its tags (max 3, read from .card__tags) matches ANY selected pill. */
   const selectedStack = new Set();
-  const status = document.querySelector('.work__status');
+  const status = document.querySelector('.work__status') || { textContent: '' };   // projects.html has no filter line
 
   // The tag elements of a card (only the first 3 count)
   const tagsOf = card => Array.from(card.querySelectorAll('.card__tags li')).slice(0, 3);
