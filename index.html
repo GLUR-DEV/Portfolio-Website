@@ -83,11 +83,15 @@
         </ul>
       </div>
 
-      <!-- Decorative code window to showcase skills.
-           aria-hidden: the typing effect leaves partial text on screen, and the same skills
-           are listed in the Stack section, so screen readers skip this card. -->
-      <figure class="code-card" aria-hidden="true">
-        <div class="code-card__dots" aria-hidden="true"><span></span><span></span><span></span></div>
+      <!-- Decorative code windows to showcase skills. On wide screens (1440px and over, where the lava
+           lamp fills the page margins) three windows are stacked and typed out one after another;
+           narrower screens show only the first. The whole stack is aria-hidden: the typing effect
+           leaves partial text on screen, and the same skills are listed in the Stack section. -->
+      <div class="code-stack" aria-hidden="true">
+
+        <!-- Window 1: C# (always shown) -->
+        <figure class="code-card code-card--1">
+          <div class="code-card__dots" aria-hidden="true"><span></span><span></span><span></span></div>
 <!-- Full snippet for tablets and desktops -->
 <pre class="code--full"><code><span class="kw">var</span> app = WebApplication.CreateBuilder(args).Build();
 
@@ -99,7 +103,27 @@ app.<span class="fn">MapGet</span>("/skills", () =&gt; <span class="kw">new</spa
 <pre class="code--compact"><code><span class="kw">var</span> app = WebApplication.Create();
 app.<span class="fn">MapGet</span>("/skills", () =&gt;
     "C#, .NET, SQL, JS");</code></pre>
-      </figure>
+        </figure>
+
+        <!-- Window 2: JavaScript (wide screens only) -->
+        <figure class="code-card code-card--extra code-card--2">
+          <div class="code-card__dots" aria-hidden="true"><span></span><span></span><span></span></div>
+<pre class="code--full"><code><span class="kw">const</span> skills = <span class="kw">await</span> <span class="fn">fetch</span>("/skills")
+  .<span class="fn">then</span>(res =&gt; res.<span class="fn">json</span>());
+
+<span class="fn">renderSkills</span>(skills);</code></pre>
+        </figure>
+
+        <!-- Window 3: SQL (wide screens only) -->
+        <figure class="code-card code-card--extra code-card--3">
+          <div class="code-card__dots" aria-hidden="true"><span></span><span></span><span></span></div>
+<pre class="code--full"><code><span class="kw">SELECT</span> name, level
+<span class="kw">FROM</span> skills
+<span class="kw">WHERE</span> years &gt; 1
+<span class="kw">ORDER BY</span> level <span class="kw">DESC</span>;</code></pre>
+        </figure>
+
+      </div>
     </section>
 
     <!-- ===== STACK: technology pills (toggle buttons; multiple can be selected) ===== -->
