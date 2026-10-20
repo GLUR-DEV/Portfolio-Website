@@ -2,7 +2,7 @@
 
 # IMPORTANT: this must match the name of your Worker in the Cloudflare dashboard
 # (Workers & Pages > click your project > the name at the top). If it differs, change it here.
-name = "glursolutions"
+name = "portfolio-website"
 
 main = "src/worker.js"                  # server code (the contact form endpoint)
 compatibility_date = "2026-10-01"
