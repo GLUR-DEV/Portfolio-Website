@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- ============================================================
+       Project page – HTML
+       Reached only by clicking a project card in "My work" on index.html (cards link to
+       projects.html?project=one, =two and so on). Only that one project is shown; projectsscript.js
+       hides the others. Without JavaScript every project is shown, one after another.
+       Shares indexstyles.css (base styles), indexscript.js (header, lava lamp) and the header and
+       footer with index.html. projectsstyles.css holds the styles for this page only, and
+       projectsscript.js runs the slideshows.
+       ============================================================ -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Project | GLUR Solutions</title>
+  <meta name="description" content="A GLUR Solutions project: the design process and how it improved.">
+
+  <!-- Fonts: Bricolage Grotesque (headings/body) and JetBrains Mono (code/labels) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Same JS-enabled marker and 3-second fallback as index.html -->
+  <script>
+    document.documentElement.classList.add('js');
+    setTimeout(function () {
+      if (!document.documentElement.classList.contains('js-ready')) {
+        document.documentElement.classList.remove('js');
+      }
+    }, 3000);
+  </script>
+
+  <link rel="stylesheet" href="indexstyles.css">
+  <link rel="stylesheet" href="projectsstyles.css">
+</head>
+<body>
+
+  <!-- Animated "lava lamp" background (drawn by indexscript.js, styled in indexstyles.css section 9c) -->
+  <div class="lava" aria-hidden="true">
+    <canvas class="lava__canvas lava__canvas--left"></canvas>
+    <canvas class="lava__canvas lava__canvas--right"></canvas>
+  </div>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ===== HEADER: logo + main navigation (links point back to the home page) ===== -->
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="logo" href="index.html">&lt; GLUR Solutions /&gt;</a>
+      <nav aria-label="Main">
+        <ul class="nav">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="index.html#work">Work</a></li>
+          <li><a href="index.html#contact">Contact</a></li>
+          <li><a href="index.html#about">About</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ===== BACK LINK ===== -->
+    <div class="crumb container">
+      <a class="back" href="index.html#work"><span aria-hidden="true">&larr;</span> Back to my work</a>
+    </div>
+
+    <!-- ===== PROJECT ONE: only one project is shown at a time (projectsscript.js reads ?project=one) ===== -->
+    <section class="project container" id="project-one" data-project="one" data-title="[PROJECT ONE]" aria-labelledby="project-one-title">
+      <div class="project__head">
+        <p class="hero__tagline">Project one</p>
+        <h1 id="project-one-title">[PROJECT ONE]</h1>
+        <p>[One or two sentences: what it is, who it is for and the problem it solves.]</p>
+        <ul class="card__tags" aria-label="Technologies used">
+          <li data-tech="csharp">C#</li>
+          <li data-tech="dotnet">.NET</li>
+          <li data-tech="sql">SQL</li>
+        </ul>
+      </div>
+
+      <!-- Slideshow 1: wireframe, feedback, revised design, final design, beside the feedback summary and project details -->
+      <div class="project__grid">
+        <div class="project__col">
+          <h2 class="mini-label">// Wireframe to final design</h2>
+          <div class="slideshow" data-slideshow>
+            <div class="slideshow__viewport" tabindex="0" role="region" aria-roledescription="carousel" aria-label="[PROJECT ONE] design process">
+              <div class="slideshow__track">
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="1 of 4: Wireframe">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-one-process-1-wireframe.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--wf" role="img" aria-label="Placeholder picture for wireframe"><span class="ph__label">images/project-one-process-1-wireframe.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Wireframe</p>
+                  <h3>Wireframe</h3>
+                  <p>A grey-box layout used to settle structure, spacing and flow before any colour or styling.</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="2 of 4: Feedback">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-one-process-2-feedback.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--2" role="img" aria-label="Placeholder picture for feedback"><span class="ph__label">images/project-one-process-2-feedback.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Feedback</p>
+                  <h3>What people said</h3>
+                  <p>[Feedback from classmates or a client on the wireframe: what worked and what did not.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="3 of 4: Revised design">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-one-process-3-revised.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--3" role="img" aria-label="Placeholder picture for revised design"><span class="ph__label">images/project-one-process-3-revised.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Revised design</p>
+                  <h3>Revised design</h3>
+                  <p>[What changed after the feedback: layout, navigation and readability.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="4 of 4: Final design">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-one-process-4-final.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--5" role="img" aria-label="Placeholder picture for final design"><span class="ph__label">images/project-one-process-4-final.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Final design</p>
+                  <h3>Final design</h3>
+                  <p>The finished version: [a clearer layout, a faster workflow and consistent styling throughout].</p>
+                </div>
+              </div>
+              </div>
+            </div>
+            <div class="slideshow__controls">
+              <ol class="steps" aria-label="Stages of the design process">
+                <li><button type="button" class="step" data-slide="0" aria-current="true">Wireframe</button></li>
+                <li><button type="button" class="step" data-slide="1">Feedback</button></li>
+                <li><button type="button" class="step" data-slide="2">Revised design</button></li>
+                <li><button type="button" class="step" data-slide="3">Final design</button></li>
+              </ol>
+              <div class="slideshow__nav">
+                <button type="button" class="arrow" data-dir="-1" aria-label="Previous picture">&larr;</button>
+                <p class="slideshow__count" aria-live="polite">1 / 4</p>
+                <button type="button" class="arrow" data-dir="1" aria-label="Next picture">&rarr;</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <aside class="project__aside" aria-label="[PROJECT ONE] details">
+          <h2 class="mini-label">// Feedback</h2>
+          <ul class="improve">
+            <li><strong>Layout</strong> [Testers found the first wireframe crowded.]</li>
+            <li><strong>Navigation</strong> [Too many steps to reach the main task.]</li>
+            <li><strong>Readability</strong> [Text and contrast needed to be stronger.]</li>
+          </ul>
+          <h2 class="mini-label">// Details</h2>
+          <dl class="facts">
+            <div><dt>Role</dt><dd>[Designer and developer]</dd></div>
+            <div><dt>Tools</dt><dd>[C#, .NET, SQL, Figma]</dd></div>
+            <div><dt>Timeframe</dt><dd>[6 weeks]</dd></div>
+          </dl>
+        </aside>
+      </div>
+
+      <!-- Slideshow 2: how the project improved over time (sides swapped) -->
+      <div class="project__grid project__grid--flip">
+        <div class="project__col">
+          <h2 class="mini-label">// Improvements over time</h2>
+          <div class="slideshow" data-slideshow>
+            <div class="slideshow__viewport" tabindex="0" role="region" aria-roledescription="carousel" aria-label="[PROJECT ONE] improvements">
+              <div class="slideshow__track">
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="1 of 4: Version 1">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-one-improve-1-v1.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--2" role="img" aria-label="Placeholder picture for version 1"><span class="ph__label">images/project-one-improve-1-v1.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Version 1</p>
+                  <h3>The starting point</h3>
+                  <p>[Screenshot and a sentence on how it looked and worked at first.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="2 of 4: Version 2">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-one-improve-2-v2.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--3" role="img" aria-label="Placeholder picture for version 2"><span class="ph__label">images/project-one-improve-2-v2.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Version 2</p>
+                  <h3>First round of changes</h3>
+                  <p>[What I changed after the first round of feedback, and why.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="3 of 4: Version 3">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-one-improve-3-v3.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--4" role="img" aria-label="Placeholder picture for version 3"><span class="ph__label">images/project-one-improve-3-v3.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Version 3</p>
+                  <h3>Refinement</h3>
+                  <p>[Smaller fixes: spacing, colour, wording, speed.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="4 of 4: Final">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-one-improve-4-final.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--5" role="img" aria-label="Placeholder picture for final"><span class="ph__label">images/project-one-improve-4-final.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Final</p>
+                  <h3>The result</h3>
+                  <p>[How the finished version compares with version 1.]</p>
+                </div>
+              </div>
+              </div>
+            </div>
+            <div class="slideshow__controls">
+              <ol class="steps" aria-label="Versions of the project">
+                <li><button type="button" class="step" data-slide="0" aria-current="true">Version 1</button></li>
+                <li><button type="button" class="step" data-slide="1">Version 2</button></li>
+                <li><button type="button" class="step" data-slide="2">Version 3</button></li>
+                <li><button type="button" class="step" data-slide="3">Final</button></li>
+              </ol>
+              <div class="slideshow__nav">
+                <button type="button" class="arrow" data-dir="-1" aria-label="Previous picture">&larr;</button>
+                <p class="slideshow__count" aria-live="polite">1 / 4</p>
+                <button type="button" class="arrow" data-dir="1" aria-label="Next picture">&rarr;</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <aside class="project__aside" aria-label="[PROJECT ONE] improvements">
+          <h2 class="mini-label">// What improved</h2>
+          <ul class="improve">
+            <li><strong>Navigation</strong> from [a crowded menu with eight links] to [three clear destinations].</li>
+            <li><strong>Forms</strong> from [a long single page] to [a short three-step flow].</li>
+            <li><strong>Speed</strong> [page load] down from [4s] to [1.2s] after [optimising queries and images].</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ===== PROJECT TWO: only one project is shown at a time (projectsscript.js reads ?project=two) ===== -->
+    <section class="project container" id="project-two" data-project="two" data-title="[PROJECT TWO]" aria-labelledby="project-two-title">
+      <div class="project__head">
+        <p class="hero__tagline">Project two</p>
+        <h1 id="project-two-title">[PROJECT TWO]</h1>
+        <p>[One or two sentences: what it is, who it is for and the problem it solves.]</p>
+        <ul class="card__tags" aria-label="Technologies used">
+          <li data-tech="html-css-js">HTML / CSS / JS</li>
+          <li data-tech="csharp">C#</li>
+        </ul>
+      </div>
+
+      <!-- Slideshow 1: wireframe, feedback, revised design, final design, beside the feedback summary and project details -->
+      <div class="project__grid">
+        <div class="project__col">
+          <h2 class="mini-label">// Wireframe to final design</h2>
+          <div class="slideshow" data-slideshow>
+            <div class="slideshow__viewport" tabindex="0" role="region" aria-roledescription="carousel" aria-label="[PROJECT TWO] design process">
+              <div class="slideshow__track">
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="1 of 4: Wireframe">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-two-process-1-wireframe.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--wf" role="img" aria-label="Placeholder picture for wireframe"><span class="ph__label">images/project-two-process-1-wireframe.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Wireframe</p>
+                  <h3>Wireframe</h3>
+                  <p>A grey-box layout used to settle structure, spacing and flow before any colour or styling.</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="2 of 4: Feedback">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-two-process-2-feedback.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--2" role="img" aria-label="Placeholder picture for feedback"><span class="ph__label">images/project-two-process-2-feedback.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Feedback</p>
+                  <h3>What people said</h3>
+                  <p>[Feedback from classmates or a client on the wireframe: what worked and what did not.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="3 of 4: Revised design">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-two-process-3-revised.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--3" role="img" aria-label="Placeholder picture for revised design"><span class="ph__label">images/project-two-process-3-revised.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Revised design</p>
+                  <h3>Revised design</h3>
+                  <p>[What changed after the feedback: layout, navigation and readability.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="4 of 4: Final design">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-two-process-4-final.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--5" role="img" aria-label="Placeholder picture for final design"><span class="ph__label">images/project-two-process-4-final.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Final design</p>
+                  <h3>Final design</h3>
+                  <p>The finished version: [a clearer layout, a faster workflow and consistent styling throughout].</p>
+                </div>
+              </div>
+              </div>
+            </div>
+            <div class="slideshow__controls">
+              <ol class="steps" aria-label="Stages of the design process">
+                <li><button type="button" class="step" data-slide="0" aria-current="true">Wireframe</button></li>
+                <li><button type="button" class="step" data-slide="1">Feedback</button></li>
+                <li><button type="button" class="step" data-slide="2">Revised design</button></li>
+                <li><button type="button" class="step" data-slide="3">Final design</button></li>
+              </ol>
+              <div class="slideshow__nav">
+                <button type="button" class="arrow" data-dir="-1" aria-label="Previous picture">&larr;</button>
+                <p class="slideshow__count" aria-live="polite">1 / 4</p>
+                <button type="button" class="arrow" data-dir="1" aria-label="Next picture">&rarr;</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <aside class="project__aside" aria-label="[PROJECT TWO] details">
+          <h2 class="mini-label">// Feedback</h2>
+          <ul class="improve">
+            <li><strong>Layout</strong> [Testers found the first wireframe crowded.]</li>
+            <li><strong>Navigation</strong> [Too many steps to reach the main task.]</li>
+            <li><strong>Readability</strong> [Text and contrast needed to be stronger.]</li>
+          </ul>
+          <h2 class="mini-label">// Details</h2>
+          <dl class="facts">
+            <div><dt>Role</dt><dd>[Designer and developer]</dd></div>
+            <div><dt>Tools</dt><dd>[HTML / CSS / JS, C#, Figma]</dd></div>
+            <div><dt>Timeframe</dt><dd>[6 weeks]</dd></div>
+          </dl>
+        </aside>
+      </div>
+
+      <!-- Slideshow 2: how the project improved over time (sides swapped) -->
+      <div class="project__grid project__grid--flip">
+        <div class="project__col">
+          <h2 class="mini-label">// Improvements over time</h2>
+          <div class="slideshow" data-slideshow>
+            <div class="slideshow__viewport" tabindex="0" role="region" aria-roledescription="carousel" aria-label="[PROJECT TWO] improvements">
+              <div class="slideshow__track">
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="1 of 4: Version 1">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-two-improve-1-v1.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--2" role="img" aria-label="Placeholder picture for version 1"><span class="ph__label">images/project-two-improve-1-v1.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Version 1</p>
+                  <h3>The starting point</h3>
+                  <p>[Screenshot and a sentence on how it looked and worked at first.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="2 of 4: Version 2">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-two-improve-2-v2.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--3" role="img" aria-label="Placeholder picture for version 2"><span class="ph__label">images/project-two-improve-2-v2.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Version 2</p>
+                  <h3>First round of changes</h3>
+                  <p>[What I changed after the first round of feedback, and why.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="3 of 4: Version 3">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-two-improve-3-v3.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--4" role="img" aria-label="Placeholder picture for version 3"><span class="ph__label">images/project-two-improve-3-v3.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Version 3</p>
+                  <h3>Refinement</h3>
+                  <p>[Smaller fixes: spacing, colour, wording, speed.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="4 of 4: Final">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-two-improve-4-final.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--5" role="img" aria-label="Placeholder picture for final"><span class="ph__label">images/project-two-improve-4-final.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Final</p>
+                  <h3>The result</h3>
+                  <p>[How the finished version compares with version 1.]</p>
+                </div>
+              </div>
+              </div>
+            </div>
+            <div class="slideshow__controls">
+              <ol class="steps" aria-label="Versions of the project">
+                <li><button type="button" class="step" data-slide="0" aria-current="true">Version 1</button></li>
+                <li><button type="button" class="step" data-slide="1">Version 2</button></li>
+                <li><button type="button" class="step" data-slide="2">Version 3</button></li>
+                <li><button type="button" class="step" data-slide="3">Final</button></li>
+              </ol>
+              <div class="slideshow__nav">
+                <button type="button" class="arrow" data-dir="-1" aria-label="Previous picture">&larr;</button>
+                <p class="slideshow__count" aria-live="polite">1 / 4</p>
+                <button type="button" class="arrow" data-dir="1" aria-label="Next picture">&rarr;</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <aside class="project__aside" aria-label="[PROJECT TWO] improvements">
+          <h2 class="mini-label">// What improved</h2>
+          <ul class="improve">
+            <li><strong>Navigation</strong> from [a crowded menu with eight links] to [three clear destinations].</li>
+            <li><strong>Forms</strong> from [a long single page] to [a short three-step flow].</li>
+            <li><strong>Speed</strong> [page load] down from [4s] to [1.2s] after [optimising queries and images].</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ===== PROJECT THREE: only one project is shown at a time (projectsscript.js reads ?project=three) ===== -->
+    <section class="project container" id="project-three" data-project="three" data-title="[PROJECT THREE]" aria-labelledby="project-three-title">
+      <div class="project__head">
+        <p class="hero__tagline">Project three</p>
+        <h1 id="project-three-title">[PROJECT THREE]</h1>
+        <p>[One or two sentences: what it is, who it is for and the problem it solves.]</p>
+        <ul class="card__tags" aria-label="Technologies used">
+          <li data-tech="dotnet">.NET</li>
+        </ul>
+      </div>
+
+      <!-- Slideshow 1: wireframe, feedback, revised design, final design, beside the feedback summary and project details -->
+      <div class="project__grid">
+        <div class="project__col">
+          <h2 class="mini-label">// Wireframe to final design</h2>
+          <div class="slideshow" data-slideshow>
+            <div class="slideshow__viewport" tabindex="0" role="region" aria-roledescription="carousel" aria-label="[PROJECT THREE] design process">
+              <div class="slideshow__track">
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="1 of 4: Wireframe">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-three-process-1-wireframe.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--wf" role="img" aria-label="Placeholder picture for wireframe"><span class="ph__label">images/project-three-process-1-wireframe.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Wireframe</p>
+                  <h3>Wireframe</h3>
+                  <p>A grey-box layout used to settle structure, spacing and flow before any colour or styling.</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="2 of 4: Feedback">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-three-process-2-feedback.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--2" role="img" aria-label="Placeholder picture for feedback"><span class="ph__label">images/project-three-process-2-feedback.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Feedback</p>
+                  <h3>What people said</h3>
+                  <p>[Feedback from classmates or a client on the wireframe: what worked and what did not.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="3 of 4: Revised design">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-three-process-3-revised.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--3" role="img" aria-label="Placeholder picture for revised design"><span class="ph__label">images/project-three-process-3-revised.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Revised design</p>
+                  <h3>Revised design</h3>
+                  <p>[What changed after the feedback: layout, navigation and readability.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="4 of 4: Final design">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-three-process-4-final.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--5" role="img" aria-label="Placeholder picture for final design"><span class="ph__label">images/project-three-process-4-final.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Final design</p>
+                  <h3>Final design</h3>
+                  <p>The finished version: [a clearer layout, a faster workflow and consistent styling throughout].</p>
+                </div>
+              </div>
+              </div>
+            </div>
+            <div class="slideshow__controls">
+              <ol class="steps" aria-label="Stages of the design process">
+                <li><button type="button" class="step" data-slide="0" aria-current="true">Wireframe</button></li>
+                <li><button type="button" class="step" data-slide="1">Feedback</button></li>
+                <li><button type="button" class="step" data-slide="2">Revised design</button></li>
+                <li><button type="button" class="step" data-slide="3">Final design</button></li>
+              </ol>
+              <div class="slideshow__nav">
+                <button type="button" class="arrow" data-dir="-1" aria-label="Previous picture">&larr;</button>
+                <p class="slideshow__count" aria-live="polite">1 / 4</p>
+                <button type="button" class="arrow" data-dir="1" aria-label="Next picture">&rarr;</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <aside class="project__aside" aria-label="[PROJECT THREE] details">
+          <h2 class="mini-label">// Feedback</h2>
+          <ul class="improve">
+            <li><strong>Layout</strong> [Testers found the first wireframe crowded.]</li>
+            <li><strong>Navigation</strong> [Too many steps to reach the main task.]</li>
+            <li><strong>Readability</strong> [Text and contrast needed to be stronger.]</li>
+          </ul>
+          <h2 class="mini-label">// Details</h2>
+          <dl class="facts">
+            <div><dt>Role</dt><dd>[Designer and developer]</dd></div>
+            <div><dt>Tools</dt><dd>[.NET, Figma]</dd></div>
+            <div><dt>Timeframe</dt><dd>[6 weeks]</dd></div>
+          </dl>
+        </aside>
+      </div>
+
+      <!-- Slideshow 2: how the project improved over time (sides swapped) -->
+      <div class="project__grid project__grid--flip">
+        <div class="project__col">
+          <h2 class="mini-label">// Improvements over time</h2>
+          <div class="slideshow" data-slideshow>
+            <div class="slideshow__viewport" tabindex="0" role="region" aria-roledescription="carousel" aria-label="[PROJECT THREE] improvements">
+              <div class="slideshow__track">
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="1 of 4: Version 1">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-three-improve-1-v1.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--2" role="img" aria-label="Placeholder picture for version 1"><span class="ph__label">images/project-three-improve-1-v1.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Version 1</p>
+                  <h3>The starting point</h3>
+                  <p>[Screenshot and a sentence on how it looked and worked at first.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="2 of 4: Version 2">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-three-improve-2-v2.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--3" role="img" aria-label="Placeholder picture for version 2"><span class="ph__label">images/project-three-improve-2-v2.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Version 2</p>
+                  <h3>First round of changes</h3>
+                  <p>[What I changed after the first round of feedback, and why.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="3 of 4: Version 3">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-three-improve-3-v3.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--4" role="img" aria-label="Placeholder picture for version 3"><span class="ph__label">images/project-three-improve-3-v3.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Version 3</p>
+                  <h3>Refinement</h3>
+                  <p>[Smaller fixes: spacing, colour, wording, speed.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="4 of 4: Final">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-three-improve-4-final.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--5" role="img" aria-label="Placeholder picture for final"><span class="ph__label">images/project-three-improve-4-final.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Final</p>
+                  <h3>The result</h3>
+                  <p>[How the finished version compares with version 1.]</p>
+                </div>
+              </div>
+              </div>
+            </div>
+            <div class="slideshow__controls">
+              <ol class="steps" aria-label="Versions of the project">
+                <li><button type="button" class="step" data-slide="0" aria-current="true">Version 1</button></li>
+                <li><button type="button" class="step" data-slide="1">Version 2</button></li>
+                <li><button type="button" class="step" data-slide="2">Version 3</button></li>
+                <li><button type="button" class="step" data-slide="3">Final</button></li>
+              </ol>
+              <div class="slideshow__nav">
+                <button type="button" class="arrow" data-dir="-1" aria-label="Previous picture">&larr;</button>
+                <p class="slideshow__count" aria-live="polite">1 / 4</p>
+                <button type="button" class="arrow" data-dir="1" aria-label="Next picture">&rarr;</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <aside class="project__aside" aria-label="[PROJECT THREE] improvements">
+          <h2 class="mini-label">// What improved</h2>
+          <ul class="improve">
+            <li><strong>Navigation</strong> from [a crowded menu with eight links] to [three clear destinations].</li>
+            <li><strong>Forms</strong> from [a long single page] to [a short three-step flow].</li>
+            <li><strong>Speed</strong> [page load] down from [4s] to [1.2s] after [optimising queries and images].</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ===== PROJECT FOUR: only one project is shown at a time (projectsscript.js reads ?project=four) ===== -->
+    <section class="project container" id="project-four" data-project="four" data-title="[PROJECT FOUR]" aria-labelledby="project-four-title">
+      <div class="project__head">
+        <p class="hero__tagline">Project four</p>
+        <h1 id="project-four-title">[PROJECT FOUR]</h1>
+        <p>[One or two sentences: what it is, who it is for and the problem it solves.]</p>
+        <ul class="card__tags" aria-label="Technologies used">
+          <li data-tech="sql">SQL</li>
+        </ul>
+      </div>
+
+      <!-- Slideshow 1: wireframe, feedback, revised design, final design, beside the feedback summary and project details -->
+      <div class="project__grid">
+        <div class="project__col">
+          <h2 class="mini-label">// Wireframe to final design</h2>
+          <div class="slideshow" data-slideshow>
+            <div class="slideshow__viewport" tabindex="0" role="region" aria-roledescription="carousel" aria-label="[PROJECT FOUR] design process">
+              <div class="slideshow__track">
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="1 of 4: Wireframe">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-four-process-1-wireframe.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--wf" role="img" aria-label="Placeholder picture for wireframe"><span class="ph__label">images/project-four-process-1-wireframe.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Wireframe</p>
+                  <h3>Wireframe</h3>
+                  <p>A grey-box layout used to settle structure, spacing and flow before any colour or styling.</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="2 of 4: Feedback">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-four-process-2-feedback.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--2" role="img" aria-label="Placeholder picture for feedback"><span class="ph__label">images/project-four-process-2-feedback.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Feedback</p>
+                  <h3>What people said</h3>
+                  <p>[Feedback from classmates or a client on the wireframe: what worked and what did not.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="3 of 4: Revised design">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-four-process-3-revised.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--3" role="img" aria-label="Placeholder picture for revised design"><span class="ph__label">images/project-four-process-3-revised.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Revised design</p>
+                  <h3>Revised design</h3>
+                  <p>[What changed after the feedback: layout, navigation and readability.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="4 of 4: Final design">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-four-process-4-final.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--5" role="img" aria-label="Placeholder picture for final design"><span class="ph__label">images/project-four-process-4-final.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Final design</p>
+                  <h3>Final design</h3>
+                  <p>The finished version: [a clearer layout, a faster workflow and consistent styling throughout].</p>
+                </div>
+              </div>
+              </div>
+            </div>
+            <div class="slideshow__controls">
+              <ol class="steps" aria-label="Stages of the design process">
+                <li><button type="button" class="step" data-slide="0" aria-current="true">Wireframe</button></li>
+                <li><button type="button" class="step" data-slide="1">Feedback</button></li>
+                <li><button type="button" class="step" data-slide="2">Revised design</button></li>
+                <li><button type="button" class="step" data-slide="3">Final design</button></li>
+              </ol>
+              <div class="slideshow__nav">
+                <button type="button" class="arrow" data-dir="-1" aria-label="Previous picture">&larr;</button>
+                <p class="slideshow__count" aria-live="polite">1 / 4</p>
+                <button type="button" class="arrow" data-dir="1" aria-label="Next picture">&rarr;</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <aside class="project__aside" aria-label="[PROJECT FOUR] details">
+          <h2 class="mini-label">// Feedback</h2>
+          <ul class="improve">
+            <li><strong>Layout</strong> [Testers found the first wireframe crowded.]</li>
+            <li><strong>Navigation</strong> [Too many steps to reach the main task.]</li>
+            <li><strong>Readability</strong> [Text and contrast needed to be stronger.]</li>
+          </ul>
+          <h2 class="mini-label">// Details</h2>
+          <dl class="facts">
+            <div><dt>Role</dt><dd>[Designer and developer]</dd></div>
+            <div><dt>Tools</dt><dd>[SQL, Figma]</dd></div>
+            <div><dt>Timeframe</dt><dd>[6 weeks]</dd></div>
+          </dl>
+        </aside>
+      </div>
+
+      <!-- Slideshow 2: how the project improved over time (sides swapped) -->
+      <div class="project__grid project__grid--flip">
+        <div class="project__col">
+          <h2 class="mini-label">// Improvements over time</h2>
+          <div class="slideshow" data-slideshow>
+            <div class="slideshow__viewport" tabindex="0" role="region" aria-roledescription="carousel" aria-label="[PROJECT FOUR] improvements">
+              <div class="slideshow__track">
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="1 of 4: Version 1">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-four-improve-1-v1.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--2" role="img" aria-label="Placeholder picture for version 1"><span class="ph__label">images/project-four-improve-1-v1.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Version 1</p>
+                  <h3>The starting point</h3>
+                  <p>[Screenshot and a sentence on how it looked and worked at first.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="2 of 4: Version 2">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-four-improve-2-v2.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--3" role="img" aria-label="Placeholder picture for version 2"><span class="ph__label">images/project-four-improve-2-v2.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Version 2</p>
+                  <h3>First round of changes</h3>
+                  <p>[What I changed after the first round of feedback, and why.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="3 of 4: Version 3">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-four-improve-3-v3.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--4" role="img" aria-label="Placeholder picture for version 3"><span class="ph__label">images/project-four-improve-3-v3.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Version 3</p>
+                  <h3>Refinement</h3>
+                  <p>[Smaller fixes: spacing, colour, wording, speed.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="4 of 4: Final">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-four-improve-4-final.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--5" role="img" aria-label="Placeholder picture for final"><span class="ph__label">images/project-four-improve-4-final.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Final</p>
+                  <h3>The result</h3>
+                  <p>[How the finished version compares with version 1.]</p>
+                </div>
+              </div>
+              </div>
+            </div>
+            <div class="slideshow__controls">
+              <ol class="steps" aria-label="Versions of the project">
+                <li><button type="button" class="step" data-slide="0" aria-current="true">Version 1</button></li>
+                <li><button type="button" class="step" data-slide="1">Version 2</button></li>
+                <li><button type="button" class="step" data-slide="2">Version 3</button></li>
+                <li><button type="button" class="step" data-slide="3">Final</button></li>
+              </ol>
+              <div class="slideshow__nav">
+                <button type="button" class="arrow" data-dir="-1" aria-label="Previous picture">&larr;</button>
+                <p class="slideshow__count" aria-live="polite">1 / 4</p>
+                <button type="button" class="arrow" data-dir="1" aria-label="Next picture">&rarr;</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <aside class="project__aside" aria-label="[PROJECT FOUR] improvements">
+          <h2 class="mini-label">// What improved</h2>
+          <ul class="improve">
+            <li><strong>Navigation</strong> from [a crowded menu with eight links] to [three clear destinations].</li>
+            <li><strong>Forms</strong> from [a long single page] to [a short three-step flow].</li>
+            <li><strong>Speed</strong> [page load] down from [4s] to [1.2s] after [optimising queries and images].</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ===== PROJECT FIVE: only one project is shown at a time (projectsscript.js reads ?project=five) ===== -->
+    <section class="project container" id="project-five" data-project="five" data-title="[PROJECT FIVE]" aria-labelledby="project-five-title">
+      <div class="project__head">
+        <p class="hero__tagline">Project five</p>
+        <h1 id="project-five-title">[PROJECT FIVE]</h1>
+        <p>[One or two sentences: what it is, who it is for and the problem it solves.]</p>
+        <ul class="card__tags" aria-label="Technologies used">
+          <li data-tech="html-css-js">HTML / CSS / JS</li>
+          <li data-tech="csharp">C#</li>
+        </ul>
+      </div>
+
+      <!-- Slideshow 1: wireframe, feedback, revised design, final design, beside the feedback summary and project details -->
+      <div class="project__grid">
+        <div class="project__col">
+          <h2 class="mini-label">// Wireframe to final design</h2>
+          <div class="slideshow" data-slideshow>
+            <div class="slideshow__viewport" tabindex="0" role="region" aria-roledescription="carousel" aria-label="[PROJECT FIVE] design process">
+              <div class="slideshow__track">
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="1 of 4: Wireframe">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-five-process-1-wireframe.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--wf" role="img" aria-label="Placeholder picture for wireframe"><span class="ph__label">images/project-five-process-1-wireframe.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Wireframe</p>
+                  <h3>Wireframe</h3>
+                  <p>A grey-box layout used to settle structure, spacing and flow before any colour or styling.</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="2 of 4: Feedback">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-five-process-2-feedback.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--2" role="img" aria-label="Placeholder picture for feedback"><span class="ph__label">images/project-five-process-2-feedback.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Feedback</p>
+                  <h3>What people said</h3>
+                  <p>[Feedback from classmates or a client on the wireframe: what worked and what did not.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="3 of 4: Revised design">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-five-process-3-revised.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--3" role="img" aria-label="Placeholder picture for revised design"><span class="ph__label">images/project-five-process-3-revised.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Revised design</p>
+                  <h3>Revised design</h3>
+                  <p>[What changed after the feedback: layout, navigation and readability.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="4 of 4: Final design">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-five-process-4-final.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--5" role="img" aria-label="Placeholder picture for final design"><span class="ph__label">images/project-five-process-4-final.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Final design</p>
+                  <h3>Final design</h3>
+                  <p>The finished version: [a clearer layout, a faster workflow and consistent styling throughout].</p>
+                </div>
+              </div>
+              </div>
+            </div>
+            <div class="slideshow__controls">
+              <ol class="steps" aria-label="Stages of the design process">
+                <li><button type="button" class="step" data-slide="0" aria-current="true">Wireframe</button></li>
+                <li><button type="button" class="step" data-slide="1">Feedback</button></li>
+                <li><button type="button" class="step" data-slide="2">Revised design</button></li>
+                <li><button type="button" class="step" data-slide="3">Final design</button></li>
+              </ol>
+              <div class="slideshow__nav">
+                <button type="button" class="arrow" data-dir="-1" aria-label="Previous picture">&larr;</button>
+                <p class="slideshow__count" aria-live="polite">1 / 4</p>
+                <button type="button" class="arrow" data-dir="1" aria-label="Next picture">&rarr;</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <aside class="project__aside" aria-label="[PROJECT FIVE] details">
+          <h2 class="mini-label">// Feedback</h2>
+          <ul class="improve">
+            <li><strong>Layout</strong> [Testers found the first wireframe crowded.]</li>
+            <li><strong>Navigation</strong> [Too many steps to reach the main task.]</li>
+            <li><strong>Readability</strong> [Text and contrast needed to be stronger.]</li>
+          </ul>
+          <h2 class="mini-label">// Details</h2>
+          <dl class="facts">
+            <div><dt>Role</dt><dd>[Designer and developer]</dd></div>
+            <div><dt>Tools</dt><dd>[HTML / CSS / JS, C#, Figma]</dd></div>
+            <div><dt>Timeframe</dt><dd>[6 weeks]</dd></div>
+          </dl>
+        </aside>
+      </div>
+
+      <!-- Slideshow 2: how the project improved over time (sides swapped) -->
+      <div class="project__grid project__grid--flip">
+        <div class="project__col">
+          <h2 class="mini-label">// Improvements over time</h2>
+          <div class="slideshow" data-slideshow>
+            <div class="slideshow__viewport" tabindex="0" role="region" aria-roledescription="carousel" aria-label="[PROJECT FIVE] improvements">
+              <div class="slideshow__track">
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="1 of 4: Version 1">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-five-improve-1-v1.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--2" role="img" aria-label="Placeholder picture for version 1"><span class="ph__label">images/project-five-improve-1-v1.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Version 1</p>
+                  <h3>The starting point</h3>
+                  <p>[Screenshot and a sentence on how it looked and worked at first.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="2 of 4: Version 2">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-five-improve-2-v2.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--3" role="img" aria-label="Placeholder picture for version 2"><span class="ph__label">images/project-five-improve-2-v2.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Version 2</p>
+                  <h3>First round of changes</h3>
+                  <p>[What I changed after the first round of feedback, and why.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="3 of 4: Version 3">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-five-improve-3-v3.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--4" role="img" aria-label="Placeholder picture for version 3"><span class="ph__label">images/project-five-improve-3-v3.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Version 3</p>
+                  <h3>Refinement</h3>
+                  <p>[Smaller fixes: spacing, colour, wording, speed.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="4 of 4: Final">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-five-improve-4-final.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--5" role="img" aria-label="Placeholder picture for final"><span class="ph__label">images/project-five-improve-4-final.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Final</p>
+                  <h3>The result</h3>
+                  <p>[How the finished version compares with version 1.]</p>
+                </div>
+              </div>
+              </div>
+            </div>
+            <div class="slideshow__controls">
+              <ol class="steps" aria-label="Versions of the project">
+                <li><button type="button" class="step" data-slide="0" aria-current="true">Version 1</button></li>
+                <li><button type="button" class="step" data-slide="1">Version 2</button></li>
+                <li><button type="button" class="step" data-slide="2">Version 3</button></li>
+                <li><button type="button" class="step" data-slide="3">Final</button></li>
+              </ol>
+              <div class="slideshow__nav">
+                <button type="button" class="arrow" data-dir="-1" aria-label="Previous picture">&larr;</button>
+                <p class="slideshow__count" aria-live="polite">1 / 4</p>
+                <button type="button" class="arrow" data-dir="1" aria-label="Next picture">&rarr;</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <aside class="project__aside" aria-label="[PROJECT FIVE] improvements">
+          <h2 class="mini-label">// What improved</h2>
+          <ul class="improve">
+            <li><strong>Navigation</strong> from [a crowded menu with eight links] to [three clear destinations].</li>
+            <li><strong>Forms</strong> from [a long single page] to [a short three-step flow].</li>
+            <li><strong>Speed</strong> [page load] down from [4s] to [1.2s] after [optimising queries and images].</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ===== PROJECT SIX: only one project is shown at a time (projectsscript.js reads ?project=six) ===== -->
+    <section class="project container" id="project-six" data-project="six" data-title="[PROJECT SIX]" aria-labelledby="project-six-title">
+      <div class="project__head">
+        <p class="hero__tagline">Project six</p>
+        <h1 id="project-six-title">[PROJECT SIX]</h1>
+        <p>[One or two sentences: what it is, who it is for and the problem it solves.]</p>
+        <ul class="card__tags" aria-label="Technologies used">
+          <li data-tech="csharp">C#</li>
+        </ul>
+      </div>
+
+      <!-- Slideshow 1: wireframe, feedback, revised design, final design, beside the feedback summary and project details -->
+      <div class="project__grid">
+        <div class="project__col">
+          <h2 class="mini-label">// Wireframe to final design</h2>
+          <div class="slideshow" data-slideshow>
+            <div class="slideshow__viewport" tabindex="0" role="region" aria-roledescription="carousel" aria-label="[PROJECT SIX] design process">
+              <div class="slideshow__track">
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="1 of 4: Wireframe">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-six-process-1-wireframe.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--wf" role="img" aria-label="Placeholder picture for wireframe"><span class="ph__label">images/project-six-process-1-wireframe.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Wireframe</p>
+                  <h3>Wireframe</h3>
+                  <p>A grey-box layout used to settle structure, spacing and flow before any colour or styling.</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="2 of 4: Feedback">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-six-process-2-feedback.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--2" role="img" aria-label="Placeholder picture for feedback"><span class="ph__label">images/project-six-process-2-feedback.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Feedback</p>
+                  <h3>What people said</h3>
+                  <p>[Feedback from classmates or a client on the wireframe: what worked and what did not.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="3 of 4: Revised design">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-six-process-3-revised.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--3" role="img" aria-label="Placeholder picture for revised design"><span class="ph__label">images/project-six-process-3-revised.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Revised design</p>
+                  <h3>Revised design</h3>
+                  <p>[What changed after the feedback: layout, navigation and readability.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="4 of 4: Final design">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-six-process-4-final.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--5" role="img" aria-label="Placeholder picture for final design"><span class="ph__label">images/project-six-process-4-final.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Final design</p>
+                  <h3>Final design</h3>
+                  <p>The finished version: [a clearer layout, a faster workflow and consistent styling throughout].</p>
+                </div>
+              </div>
+              </div>
+            </div>
+            <div class="slideshow__controls">
+              <ol class="steps" aria-label="Stages of the design process">
+                <li><button type="button" class="step" data-slide="0" aria-current="true">Wireframe</button></li>
+                <li><button type="button" class="step" data-slide="1">Feedback</button></li>
+                <li><button type="button" class="step" data-slide="2">Revised design</button></li>
+                <li><button type="button" class="step" data-slide="3">Final design</button></li>
+              </ol>
+              <div class="slideshow__nav">
+                <button type="button" class="arrow" data-dir="-1" aria-label="Previous picture">&larr;</button>
+                <p class="slideshow__count" aria-live="polite">1 / 4</p>
+                <button type="button" class="arrow" data-dir="1" aria-label="Next picture">&rarr;</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <aside class="project__aside" aria-label="[PROJECT SIX] details">
+          <h2 class="mini-label">// Feedback</h2>
+          <ul class="improve">
+            <li><strong>Layout</strong> [Testers found the first wireframe crowded.]</li>
+            <li><strong>Navigation</strong> [Too many steps to reach the main task.]</li>
+            <li><strong>Readability</strong> [Text and contrast needed to be stronger.]</li>
+          </ul>
+          <h2 class="mini-label">// Details</h2>
+          <dl class="facts">
+            <div><dt>Role</dt><dd>[Designer and developer]</dd></div>
+            <div><dt>Tools</dt><dd>[C#, Figma]</dd></div>
+            <div><dt>Timeframe</dt><dd>[6 weeks]</dd></div>
+          </dl>
+        </aside>
+      </div>
+
+      <!-- Slideshow 2: how the project improved over time (sides swapped) -->
+      <div class="project__grid project__grid--flip">
+        <div class="project__col">
+          <h2 class="mini-label">// Improvements over time</h2>
+          <div class="slideshow" data-slideshow>
+            <div class="slideshow__viewport" tabindex="0" role="region" aria-roledescription="carousel" aria-label="[PROJECT SIX] improvements">
+              <div class="slideshow__track">
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="1 of 4: Version 1">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-six-improve-1-v1.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--2" role="img" aria-label="Placeholder picture for version 1"><span class="ph__label">images/project-six-improve-1-v1.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Version 1</p>
+                  <h3>The starting point</h3>
+                  <p>[Screenshot and a sentence on how it looked and worked at first.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="2 of 4: Version 2">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-six-improve-2-v2.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--3" role="img" aria-label="Placeholder picture for version 2"><span class="ph__label">images/project-six-improve-2-v2.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Version 2</p>
+                  <h3>First round of changes</h3>
+                  <p>[What I changed after the first round of feedback, and why.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="3 of 4: Version 3">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-six-improve-3-v3.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--4" role="img" aria-label="Placeholder picture for version 3"><span class="ph__label">images/project-six-improve-3-v3.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Version 3</p>
+                  <h3>Refinement</h3>
+                  <p>[Smaller fixes: spacing, colour, wording, speed.]</p>
+                </div>
+              </div>
+              <div class="slide" role="group" aria-roledescription="slide" aria-label="4 of 4: Final">
+                <!-- Placeholder: replace this div with <img class="slide__image" src="images/project-six-improve-4-final.jpg" alt="Describe what the picture shows"> -->
+                <div class="slide__image ph ph--5" role="img" aria-label="Placeholder picture for final"><span class="ph__label">images/project-six-improve-4-final.jpg</span></div>
+                <div class="slide__caption">
+                  <p class="slide__stage">Final</p>
+                  <h3>The result</h3>
+                  <p>[How the finished version compares with version 1.]</p>
+                </div>
+              </div>
+              </div>
+            </div>
+            <div class="slideshow__controls">
+              <ol class="steps" aria-label="Versions of the project">
+                <li><button type="button" class="step" data-slide="0" aria-current="true">Version 1</button></li>
+                <li><button type="button" class="step" data-slide="1">Version 2</button></li>
+                <li><button type="button" class="step" data-slide="2">Version 3</button></li>
+                <li><button type="button" class="step" data-slide="3">Final</button></li>
+              </ol>
+              <div class="slideshow__nav">
+                <button type="button" class="arrow" data-dir="-1" aria-label="Previous picture">&larr;</button>
+                <p class="slideshow__count" aria-live="polite">1 / 4</p>
+                <button type="button" class="arrow" data-dir="1" aria-label="Next picture">&rarr;</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <aside class="project__aside" aria-label="[PROJECT SIX] improvements">
+          <h2 class="mini-label">// What improved</h2>
+          <ul class="improve">
+            <li><strong>Navigation</strong> from [a crowded menu with eight links] to [three clear destinations].</li>
+            <li><strong>Forms</strong> from [a long single page] to [a short three-step flow].</li>
+            <li><strong>Speed</strong> [page load] down from [4s] to [1.2s] after [optimising queries and images].</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ===== CALL TO ACTION ===== -->
+    <section class="next container" aria-labelledby="next-title">
+      <h2 class="label" id="next-title">// Next</h2>
+      <p class="contact__lead">Want something like this for your business? Tell me what you need and we can work through the same process together.</p>
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="index.html#contact">Get in touch</a>
+        <a class="btn btn--secondary" href="index.html#work">Back to my work</a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== FOOTER: copyright and links ===== -->
+  <footer class="site-footer">
+    <div class="container site-footer__inner">
+      <p>
+        <span class="logo">&lt; GLUR Solutions /&gt;</span>
+        &nbsp;© 2026 · Built with Love by GLUR
+      </p>
+      <ul class="social">
+        <li><a href="https://github.com/GLUR-DEV" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+        <li><a href="https://www.linkedin.com/in/adam-lawrence-a4718b445/" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
+        <li><a href="mailto:glur.studios@gmail.com">glur.studios@gmail.com</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <!-- Header scroll state, lava lamp (indexscript.js) and the project picker and slideshows (projectsscript.js) -->
+  <script src="indexscript.js" defer></script>
+  <script src="projectsscript.js" defer></script>
+
+</body>
+</html>
