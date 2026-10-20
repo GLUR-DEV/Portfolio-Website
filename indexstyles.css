@@ -492,6 +492,18 @@ ul { margin: 0; padding: 0; list-style: none; }
 button.btn { align-self: flex-start; border: 0; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; }
 .form__status { margin: 0; font-family: var(--font-mono); font-size: 13px; color: var(--text-muted); }
 .form__status:empty { display: none; }
+/* Disabled submit button while a message is being sent */
+button.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Honeypot field: kept in the page for bots but taken out of sight and out of the layout flow
+   (so it adds no gap in the form). Not display:none, as some bots skip fields hidden that way. */
+.field--hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
 
 /* ---------- 8. About ---------- */
 .about { padding-bottom: 72px; }
