@@ -289,6 +289,29 @@ ul { margin: 0; padding: 0; list-style: none; }
   overflow-x: auto;           /* long lines scroll instead of breaking the layout */
 }
 .code-card pre { margin: 0; }
+
+/* Code stack: the hero's code windows sit in one column. Only the first window shows on screens
+   under 1440px; at 1440px and over (the same point the lava lamp moves into the page margins) two more
+   windows join it. Each is stepped a little further in and overlaps the bottom edge of the one before
+   (the overlap only covers that window's empty bottom padding, so no code is hidden), so the three
+   look stacked. Later windows sit on top, with a shadow to show the layering. */
+.code-stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.code-card--extra { display: none; }
+@media (min-width: 1440px) {
+  .code-stack { gap: 0; }                            /* the overlap replaces the gap */
+  .code-card--extra {
+    display: block;
+    position: relative;
+    margin-top: -20px;                               /* tucks under the window above by 20px */
+    box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.35);
+  }
+  .code-card--2 { margin-left: 28px; z-index: 1; }
+  .code-card--3 { margin-left: 56px; z-index: 2; }
+}
+/* The extra windows slide in when their typing starts (indexscript.js adds .is-shown). Only with
+   JavaScript running, so they are never left hidden without it. */
+.js .code-card--extra { opacity: 0; transform: translateY(14px); transition: opacity 0.5s ease, transform 0.5s ease; }
+.js .code-card--extra.is-shown { opacity: 1; transform: none; }
 .code--compact { display: none; }   /* the short snippet only appears on mobile (section 10) */
 .code-card__dots { display: flex; gap: 8px; margin-bottom: 16px; }
 .code-card__dots span {
