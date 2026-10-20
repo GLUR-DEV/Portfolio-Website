@@ -1,6 +1,6 @@
 /* ==========================================================
    Portfolio landing page – JavaScript (motion)
-   1. Sticky header state   2. Code typing effect
+   1. Sticky header state   2. Code typing effect (one window, three stacked on wide screens)
    3. Work card reveal      4. Active nav link
    5. Stack pill toggles, project filtering and the mobile project limit
    6. Contact form (opens the visitor's email app)
@@ -24,41 +24,78 @@
   window.addEventListener('scroll', updateHeader, { passive: true });
 
   /* ---------- 2. Code typing effect ----------
-     Empties every text node in the code card, then types the original
-     text back one character at a time, keeping the syntax colours. */
-  // Two snippets exist (full and compact); type whichever one is currently visible
-  const code = Array.from(document.querySelectorAll('.code-card code')).find(el => el.offsetParent !== null);
-  if (code && !reduceMotion) {
-    const pre = code.parentElement;
-    pre.style.minHeight = pre.offsetHeight + 'px';   // reserve full height so the layout doesn't jump
+     Empties every code window that is showing, then types them out one after another (top to
+     bottom), one character at a time, keeping the syntax colours. A single blinking cursor follows
+     the typing. The first window has a full and a compact snippet, so only the visible one counts;
+     the two extra windows only show on wide screens (1440px and over). Each extra window slides in
+     as its turn begins. */
+  const codeBlocks = Array.from(document.querySelectorAll('.code-card code')).filter(el => el.offsetParent !== null);
+  const cardOf = block => block.closest('.code-card');
 
-    // Collect and clear the text nodes (empty ones are skipped)
-    const walker = document.createTreeWalker(code, NodeFilter.SHOW_TEXT);
-    const parts = [];
-    while (walker.nextNode()) {
-      const node = walker.currentNode;
-      if (node.nodeValue.length) parts.push({ node, text: node.nodeValue });
-      node.nodeValue = '';
-    }
+  // Windows that aren't showing right now (the extras on narrower screens) are marked ready, so they
+  // simply appear if the window is later widened
+  document.querySelectorAll('.code-card').forEach(card => {
+    if (!codeBlocks.some(block => cardOf(block) === card)) card.classList.add('is-shown');
+  });
+
+  if (reduceMotion) {
+    codeBlocks.forEach(block => cardOf(block).classList.add('is-shown'));   // no typing: show it all
+  } else if (codeBlocks.length) {
+    // Measure every block first so each keeps its full height once emptied (no layout jump)
+    const heights = codeBlocks.map(block => block.parentElement.offsetHeight);
+
+    // Collect and clear the text nodes of every block (empty nodes are skipped)
+    const jobs = codeBlocks.map((block, i) => {
+      block.parentElement.style.minHeight = heights[i] + 'px';
+      const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+      const parts = [];
+      while (walker.nextNode()) {
+        const node = walker.currentNode;
+        if (node.nodeValue.length) parts.push({ node, text: node.nodeValue });
+        node.nodeValue = '';
+      }
+      return { card: cardOf(block), parts };
+    }).filter(job => job.parts.length);
 
     // Blinking cursor that follows the typing
     const cursor = document.createElement('span');
     cursor.className = 'cursor';
     cursor.setAttribute('aria-hidden', 'true');
 
-    let part = 0;   // which text node we're typing into
-    let char = 0;   // how many characters of it are shown
+    // With three windows (wide screens) typing is a little faster so the whole stack finishes sooner
+    const stacked = jobs.length > 1;
+    const letterMs = stacked ? 12 : 24;     // delay after each letter
+    const spaceMs = stacked ? 4 : 8;        // delay after a space or line break
+    const windowPauseMs = stacked ? 150 : 350;   // pause before the next window starts
+    const startPauseMs = stacked ? 100 : 400;    // pause between a window sliding in and its first letter
+
+    let job = 0;    // which window we're typing
+    let part = 0;   // which text node of it
+    let char = 0;   // how many characters of that node are shown
+
     const type = () => {
-      const { node, text } = parts[part];
+      const { node, text } = jobs[job].parts[part];
       if (char === 0) node.after(cursor);            // move the cursor only when a new node starts
       char += 1;
       node.nodeValue = text.slice(0, char);
       const typed = text[char - 1];
       if (char >= text.length) { part += 1; char = 0; }
-      // Keep scheduling only while there is text left; the cursor then just blinks
-      if (part < parts.length) setTimeout(type, /\s/.test(typed) ? 8 : 28);  // whitespace is quicker
+
+      if (part < jobs[job].parts.length) {
+        setTimeout(type, /\s/.test(typed) ? spaceMs : letterMs);   // whitespace is quicker than letters
+      } else if (job + 1 < jobs.length) {
+        job += 1;                                      // this window is done: next one after a pause
+        part = 0;
+        setTimeout(startJob, windowPauseMs);
+      }                                                // last window done: the cursor just blinks
     };
-    if (parts.length) setTimeout(type, 700);         // short pause after page load
+
+    const startJob = () => {
+      jobs[job].card.classList.add('is-shown');        // slides the window in (extra windows)
+      setTimeout(type, startPauseMs);
+    };
+
+    if (jobs.length) setTimeout(startJob, 700);        // short pause after page load
   }
 
   /* ---------- 3. Work card reveal ----------
