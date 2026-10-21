@@ -10,7 +10,7 @@ compatibility_date = "2026-10-01"
 [assets]
 directory = "./public"                  # the website files; only this folder is public
 binding = "ASSETS"
-run_worker_first = ["/api/*"]           # only /api/... runs worker.js; everything else is served as files
+run_worker_first = ["/api/*", "/admin", "/admin/*", "/Admin", "/Admin/*"]   # /api/... and the admin proxy run worker.js; everything else is served as files
 
 [[d1_databases]]
 binding = "DB"                          # how the code refers to it: env.DB
