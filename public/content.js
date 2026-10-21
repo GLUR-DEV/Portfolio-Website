@@ -225,9 +225,13 @@
       if (list.length) project = await getJson(`/projects/${encodeURIComponent(list[0].slug)}`);
     }
 
-    // The API answered, so the built-in placeholder projects are replaced
-    document.querySelectorAll('.project').forEach(section => section.remove());
-    document.getElementById('main').append(project ? projectSection(project) : notFound());
+   // The API answered, so the built-in placeholder projects are replaced
+   document.querySelectorAll('.project').forEach(section => section.remove());
+   const main = document.getElementById('main');
+   const section = project ? projectSection(project) : notFound();
+   const next = main.querySelector('.next');   // the "// Next" call-to-action at the bottom
+   if (next) next.before(section);             // keep the project above it
+   else main.append(section);
   };
 
   /* ---------- Go: render, then load the scripts that attach behaviour ---------- */
