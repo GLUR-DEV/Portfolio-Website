@@ -1,8 +1,9 @@
 /* ==========================================================
    Contact form server code: POST /api/contact
    This runs on Cloudflare's servers (not in the visitor's browser). wrangler.toml sets
-   run_worker_first = ["/api/*"], so only requests to /api/... reach this file; every other
-   request (the pages, CSS and JS in public/) is served directly as static files.
+   run_worker_first lists /api/* and /admin (see wrangler.toml), so only those requests reach this file;
+   every other request (the pages, CSS and JS in public/) is served directly as static files.
+   /admin is forwarded to the ASP.NET admin app by src/adminProxy.js.
 
    For each message it: checks the fields, filters out fake/spam senders (src/filters.js), saves it
    to the D1 database (env.DB) and emails you an alert (src/email.js).
@@ -10,6 +11,7 @@
 
 import { MIN_MESSAGE_LENGTH, validateEmail, checkDomain, scoreSubmission } from './filters.js';
 import { sendAlert } from './email.js';
+import { handleAdmin } from './adminProxy.js';
 
 const MAX_PER_HOUR = 5;   // messages allowed per visitor (by hashed IP) per hour
 
@@ -165,6 +167,9 @@ async function handleContent(request, env, ctx, pathname) {
 export default {
   async fetch(request, env, ctx) {
     const { pathname } = new URL(request.url);
+
+    // The admin area: forwarded to the ASP.NET app on Azure (needs a Cloudflare Access sign-in, then the app's own login)
+    if (/^\/admin(\/|$)/i.test(pathname)) return handleAdmin(request, env);
 
     if (pathname === '/api/contact') {
       if (request.method === 'POST') return handleContact(request, env, ctx);
