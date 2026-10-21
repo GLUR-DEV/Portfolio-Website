@@ -139,10 +139,10 @@ async function handleContent(request, env, ctx, pathname) {
   try {
     const origin = await fetch(`${env.API_ORIGIN}${pathname}`, {
       headers: { Accept: 'application/json', 'X-Api-Key': env.API_KEY || '' },
-      signal: AbortSignal.timeout(8000)
+      signal: AbortSignal.timeout(25000)
     });
     if (origin.status === 404) return json({ ok: false, error: 'Not found' }, 404);
-    if (!origin.ok) throw new Error(`API answered ${origin.status}`);
+    if (!origin.ok) { const e = new Error(`API answered ${origin.status}`); e.reason = `api-status-${origin.status}`; throw e; }
 
     const body = await origin.text();
     ctx.waitUntil(cache.put(cacheKey, new Response(body, {
@@ -156,7 +156,9 @@ async function handleContent(request, env, ctx, pathname) {
   } catch (err) {
     console.error('Content API failed:', err);
     if (cached) return contentResponse(await cached.text());   // serve the last good copy
-    return json({ ok: false, error: 'Content is unavailable right now' }, 502);
+    // "reason" is only a short code (api-status-401, timeout, network), never a message or address
+    const reason = err.reason || (err.name === 'TimeoutError' ? 'timeout' : 'network');
+    return json({ ok: false, error: 'Content is unavailable right now', reason }, 502);
   }
 }
 
