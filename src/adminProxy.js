@@ -35,7 +35,6 @@ export async function handleAdmin(request, env) {
     headers,
     body: hasBody ? request.body : null,
     redirect: "manual",                                              // pass redirects to the browser untouched
-    cf: { cacheTtl: 0, cacheEverything: false },
   });
 
   const response = new Response(upstream.body, upstream);            // copies status and headers (including Set-Cookie)
