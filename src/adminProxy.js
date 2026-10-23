@@ -47,6 +47,5 @@ export async function handleAdmin(request, env) {
   if (location && location.startsWith(origin.origin)) {
     response.headers.set("Location", url.origin + location.slice(origin.origin.length));
   }
-  response.headers.set("X-Debug-Upstream", `${upstream.status}; set-cookie=${upstream.headers.getSetCookie().length}`);
   return response;
 }
