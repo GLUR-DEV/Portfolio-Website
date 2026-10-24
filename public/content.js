@@ -13,7 +13,8 @@
    All database text is added with textContent / setAttribute, never as HTML, so it cannot inject markup.
    ========================================================== */
 (() => {
-  const FETCH_TIMEOUT_MS = 3500;
+  const FETCH_TIMEOUT_MS = 2000;   // if the API hasn't answered by then, use the saved copy
+  const SNAPSHOT_BASE = 'https://glurstorage.blob.core.windows.net/snapshots';
   const THEN = (document.currentScript?.dataset.then || '').split(/\s+/).filter(Boolean);
 
   /* ---------- Helpers ---------- */
@@ -41,7 +42,7 @@
   };
 
   // GET /api/<path> -> parsed JSON, null when the server says 404, throws on any other failure
-  const getJson = async path => {
+  const getLive = async path => {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
     try {
@@ -51,6 +52,33 @@
       return await res.json();
     } finally {
       clearTimeout(timer);
+    }
+  };
+
+  // The saved copy in Azure Storage, written by the admin app (same shape as the API)
+  const snapshotName = path => {
+    if (path === '/technologies') return 'technologies.json';
+    if (path === '/projects') return 'projects.json';
+    const match = path.match(/^\/projects\/(.+)$/);
+    return match ? `project-${match[1]}.json` : null;
+  };
+
+  const getSnapshot = async path => {
+    const name = snapshotName(path);
+    if (!name) throw new Error(`No saved copy for ${path}`);
+    const res = await fetch(`${SNAPSHOT_BASE}/${name}`, { cache: 'no-cache' });
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error(`Saved copy answered ${res.status}`);
+    return await res.json();
+  };
+
+  // Live API first; if it is asleep, slow or down, use the saved copy. If both fail, the caller keeps the built-in HTML.
+  const getJson = async path => {
+    try {
+      return await getLive(path);
+    } catch (liveError) {
+      console.warn(`Live API unavailable (${liveError.message}); using the saved copy`);
+      return await getSnapshot(path);
     }
   };
 
