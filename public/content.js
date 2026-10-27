@@ -14,7 +14,7 @@
    All database text is added with textContent / setAttribute, never as HTML, so it cannot inject markup.
    ========================================================== */
 (() => {
-  const FETCH_TIMEOUT_MS = 5000;   // if /api hasn't answered by then, keep the HTML already in the page
+  const FETCH_TIMEOUT_MS = 4000;   // if /api hasn't answered by then, keep the HTML already in the page
   const THEN = (document.currentScript?.dataset.then || '').split(/\s+/).filter(Boolean);
 
   /* ---------- Helpers ---------- */
