@@ -23,8 +23,13 @@ database_id = "37f35d65-1d1d-4791-8525-4940048743e5"  # printed by: npx wrangler
 ALERT_TO = "glur.studios@gmail.com"
 ALERT_FROM = "contact@glursolutions.com"
 
-# Where the hosted ASP.NET content API lives (the one reading the Azure SQL database). Change this to your
-# real address, e.g. https://api.glursolutions.com. The matching secret is set with: npx wrangler secret put API_KEY
+# Where the saved JSON copy of the site content lives (written by the admin app on every save). The Worker reads
+# it server-side, so the database is never touched by visitors. Needs public read on the container, or change
+# the Worker to send a read key.
+SNAPSHOT_BASE = "https://glurstorage.blob.core.windows.net/snapshots"
+
+# The hosted ASP.NET admin app. Only used to forward /admin (src/adminProxy.js); no content is fetched from it.
+# The matching secret is set with: npx wrangler secret put ADMIN_ORIGIN_SECRET
 API_ORIGIN = "https://glursolutions-dtc3addjc8ajcpd2.australiaeast-01.azurewebsites.net"
 
 [[send_email]]
