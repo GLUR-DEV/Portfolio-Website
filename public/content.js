@@ -1,20 +1,20 @@
 /* ==========================================================
    Site content from the database – JavaScript
-   The skill pills, project cards and project pages come from the admin app's database through
-   /api/technologies, /api/projects and /api/projects/<slug> (served by src/worker.js).
+   The skill pills, project cards and project pages come from the admin app's saved content through
+   /api/technologies, /api/projects and /api/projects/<slug> (served by src/worker.js from the JSON
+   copy the admin app writes to Azure Blob storage on every save).
 
    How it fits with the other scripts:
    1. This file runs first, fetches the content and rebuilds the pills / cards / project section.
    2. Only then does it load indexscript.js and projectsscript.js (listed in this script tag's
       data-then attribute), because those scripts attach their behaviour (filtering, slideshows,
       card reveal) to whatever is on the page when they run.
-   3. If the API is slow, down or not set up, the HTML already in the page is left exactly as it is,
+   3. If /api is slow, down or not set up, the HTML already in the page is left exactly as it is,
       and the other scripts still load, so the site never ends up blank.
    All database text is added with textContent / setAttribute, never as HTML, so it cannot inject markup.
    ========================================================== */
 (() => {
-  const FETCH_TIMEOUT_MS = 2000;   // if the API hasn't answered by then, use the saved copy
-  const SNAPSHOT_BASE = 'https://glurstorage.blob.core.windows.net/snapshots';
+  const FETCH_TIMEOUT_MS = 5000;   // if /api hasn't answered by then, keep the HTML already in the page
   const THEN = (document.currentScript?.dataset.then || '').split(/\s+/).filter(Boolean);
 
   /* ---------- Helpers ---------- */
@@ -41,8 +41,9 @@
     return null;
   };
 
-  // GET /api/<path> -> parsed JSON, null when the server says 404, throws on any other failure
-  const getLive = async path => {
+  // GET /api/<path> -> parsed JSON, null when the server says 404, throws on any other failure.
+  // The Worker answers from the saved copy of the content (Azure Blob storage) through its own edge cache.
+  const getJson = async path => {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
     try {
@@ -52,33 +53,6 @@
       return await res.json();
     } finally {
       clearTimeout(timer);
-    }
-  };
-
-  // The saved copy in Azure Storage, written by the admin app (same shape as the API)
-  const snapshotName = path => {
-    if (path === '/technologies') return 'technologies.json';
-    if (path === '/projects') return 'projects.json';
-    const match = path.match(/^\/projects\/(.+)$/);
-    return match ? `project-${match[1]}.json` : null;
-  };
-
-  const getSnapshot = async path => {
-    const name = snapshotName(path);
-    if (!name) throw new Error(`No saved copy for ${path}`);
-    const res = await fetch(`${SNAPSHOT_BASE}/${name}`, { cache: 'no-cache' });
-    if (res.status === 404) return null;
-    if (!res.ok) throw new Error(`Saved copy answered ${res.status}`);
-    return await res.json();
-  };
-
-  // Live API first; if it is asleep, slow or down, use the saved copy. If both fail, the caller keeps the built-in HTML.
-  const getJson = async path => {
-    try {
-      return await getLive(path);
-    } catch (liveError) {
-      console.warn(`Live API unavailable (${liveError.message}); using the saved copy`);
-      return await getSnapshot(path);
     }
   };
 

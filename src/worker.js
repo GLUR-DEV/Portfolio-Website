@@ -111,16 +111,24 @@ async function handleContact(request, env, ctx) {
 }
 
 /* ---------- Site content: GET /api/technologies, /api/projects, /api/projects/<slug> ----------
-   The pages' content lives in the ASP.NET admin app's Azure SQL database. A small hosted API
-   (env.API_ORIGIN) reads it; this Worker calls that API from the server side, so the browser only ever
-   talks to glursolutions.com (no CORS) and the API key (env.API_KEY, a secret) never reaches the browser.
+   The pages' content is edited in the ASP.NET admin app. Every admin save writes a JSON copy of the public
+   content to Azure Blob storage (technologies.json, projects.json, project-<slug>.json). This Worker reads
+   those files from the server side (env.SNAPSHOT_BASE), so visitors never touch the database and the
+   browser only ever talks to glursolutions.com (no CORS, and the storage account can stay private to the browser).
 
-   Answers are kept in Cloudflare's cache: fresh for 60 seconds, then refreshed from the API. If the API
-   or database is asleep or down, the last good answer (up to a day old) is served instead, so the site
-   keeps working. Only these exact paths are forwarded, nothing else. */
+   Answers are kept in Cloudflare's cache: fresh for 60 seconds, then re-read from Blob storage. If storage
+   is unreachable, the last good answer (up to a day old) is served instead. Only these exact paths are
+   mapped to files, nothing else. */
 const CONTENT_PATH = /^\/api\/(technologies|projects(\/[A-Za-z0-9_-]{1,80})?)$/;
 const FRESH_SECONDS = 60;
 const KEEP_SECONDS = 86400;
+
+// /api/technologies -> technologies.json, /api/projects -> projects.json, /api/projects/<slug> -> project-<slug>.json
+const snapshotFile = pathname => {
+  if (pathname === '/api/technologies') return 'technologies.json';
+  if (pathname === '/api/projects') return 'projects.json';
+  return `project-${pathname.slice('/api/projects/'.length)}.json`;
+};
 
 const contentResponse = (body, status = 200) =>
   new Response(body, {
@@ -130,7 +138,7 @@ const contentResponse = (body, status = 200) =>
 
 async function handleContent(request, env, ctx, pathname) {
   if (request.method !== 'GET') return json({ ok: false, error: 'Method not allowed' }, 405, { Allow: 'GET' });
-  if (!env.API_ORIGIN) return json({ ok: false, error: 'Content is not configured' }, 503);
+  if (!env.SNAPSHOT_BASE) return json({ ok: false, error: 'Content is not configured' }, 503);
 
   const cache = caches.default;
   const cacheKey = new Request(new URL(pathname, request.url).toString(), { method: 'GET' });
@@ -139,12 +147,12 @@ async function handleContent(request, env, ctx, pathname) {
   if (cached && ageSeconds < FRESH_SECONDS) return contentResponse(await cached.text());
 
   try {
-    const origin = await fetch(`${env.API_ORIGIN}${pathname}`, {
-      headers: { Accept: 'application/json', 'X-Api-Key': env.API_KEY || '' },
-      signal: AbortSignal.timeout(25000)
+    const origin = await fetch(`${env.SNAPSHOT_BASE}/${snapshotFile(pathname)}`, {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(8000)
     });
-    if (origin.status === 404) return json({ ok: false, error: 'Not found' }, 404);
-    if (!origin.ok) { const e = new Error(`API answered ${origin.status}`); e.reason = `api-status-${origin.status}`; throw e; }
+    if (origin.status === 404 || origin.status === 403) return json({ ok: false, error: 'Not found' }, 404);   // no saved copy for this name
+    if (!origin.ok) { const e = new Error(`Storage answered ${origin.status}`); e.reason = `storage-status-${origin.status}`; throw e; }
 
     const body = await origin.text();
     ctx.waitUntil(cache.put(cacheKey, new Response(body, {
@@ -156,9 +164,9 @@ async function handleContent(request, env, ctx, pathname) {
     })));
     return contentResponse(body);
   } catch (err) {
-    console.error('Content API failed:', err);
+    console.error('Content snapshot failed:', err);
     if (cached) return contentResponse(await cached.text());   // serve the last good copy
-    // "reason" is only a short code (api-status-401, timeout, network), never a message or address
+    // "reason" is only a short code (storage-status-500, timeout, network), never a message or address
     const reason = err.reason || (err.name === 'TimeoutError' ? 'timeout' : 'network');
     return json({ ok: false, error: 'Content is unavailable right now', reason }, 502);
   }
