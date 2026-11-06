@@ -312,11 +312,11 @@ html.lb-open { overflow: hidden; }
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
   cursor: zoom-out;
 }
-.lightbox__pic:has(img.slide__image) { width: auto; }              /* a real screenshot keeps its own shape */
 .lightbox__pic img.slide__image {
-  width: auto; max-width: 100%;
-  height: auto; max-height: calc(100vh - 190px);
-  aspect-ratio: auto;
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
   object-fit: contain;
   cursor: zoom-out;
 }
