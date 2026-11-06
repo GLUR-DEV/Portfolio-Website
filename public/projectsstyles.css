@@ -304,9 +304,16 @@ html.lb-open { overflow: hidden; }
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
 }
-.lightbox__panel { position: relative; display: flex; flex-direction: column; gap: 16px; max-width: 100%; }
+.lightbox__panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(calc(100vw - 40px), calc((100vh - 190px) * 1.6));   /* moved here from .lightbox__pic */
+  max-width: 100%;
+}
 .lightbox__pic {
-  width: min(calc(100vw - 40px), calc((100vh - 190px) * 1.6));   /* keeps the 16:10 shape on any screen */
+  width: 100%;                       /* fills the panel, so the picture is always centered with the bar */
   border-radius: 14px;
   overflow: hidden;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
@@ -363,7 +370,7 @@ html.lb-open { overflow: hidden; }
   .aside__text { margin-bottom: 14px; }
   .lightbox { padding: 12px; }
   .lightbox__bar { flex-direction: column; gap: 14px; }
-  .lightbox__pic { width: min(calc(100vw - 24px), calc((100vh - 230px) * 1.6)); }
+  .lightbox__panel { width: min(calc(100vw - 24px), calc((100vh - 230px) * 1.6)); }
   .slide__caption { padding: 16px 18px 6px; }
   .slide__caption h3 { font-size: 19px; }
   .slideshow__controls { padding: 12px 18px 18px; gap: 12px; }
