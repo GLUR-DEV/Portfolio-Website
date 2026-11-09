@@ -41,7 +41,20 @@
 
 /* "Check this project out" button: leaves the site, so it opens in a new tab and shows an arrow
    that nudges up and to the right on hover or keyboard focus */
-.project__actions { margin-top: 22px; }
+.project__actions {
+  margin-top: 22px;
+  display: flex;
+  flex-wrap: wrap;          /* stacks neatly on narrow screens */
+  align-items: center;
+  gap: 12px;                /* the spacing between the buttons; change to taste */
+}
+/* Give the green button the same 1px border as the outline one so both are the same height */
+.project__actions .btn--primary { border: 1px solid transparent; }
+/* Design notes is the quieter option: outline only, muted text */
+.project__actions .btn--secondary { color: var(--text-muted); }
+.project__actions .btn--secondary:hover,
+.project__actions .btn--secondary:focus-visible { color: var(--text); border-color: var(--green); }
+
 .btn--external {
   display: inline-flex;
   align-items: center;
