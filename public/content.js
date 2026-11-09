@@ -41,6 +41,8 @@
     return null;
   };
 
+  const safeLink = url => (url && /^https:\/\/[^\s"'()<>]+$/i.test(url)) ? url : null;
+
   // GET /api/<path> -> parsed JSON, null when the server says 404, throws on any other failure.
   // The Worker answers from the saved copy of the content (Azure Blob storage) through its own edge cache.
   const getJson = async path => {
@@ -194,6 +196,20 @@
           detailsShown ? null : facts(project))));
     }
 
+    const liveUrl = safeLink(project.liveSiteUrl);
+    const notesUrl = safeLink(project.designNotesUrl);
+    const actions = (liveUrl || notesUrl)
+      ? el('div', { class: 'project__actions' },
+          liveUrl ? el('a', {
+            class: 'btn btn--primary btn--external', href: liveUrl, target: '_blank',
+            rel: 'noopener noreferrer', 'aria-label': 'Go to live site (opens in a new tab)', text: 'Go to live site'
+          }) : null,
+          notesUrl ? el('a', {
+            class: 'btn btn--secondary btn--external', href: notesUrl, target: '_blank',
+            rel: 'noopener noreferrer', 'aria-label': 'See the design notes (opens in a new tab)', text: 'See the design notes'
+          }) : null)
+      : null;
+
     return el('section', {
       class: 'project container', id, 'data-project': project.slug,
       'data-title': project.title, 'aria-labelledby': `${id}-title`
@@ -203,7 +219,8 @@
         el('h1', { id: `${id}-title`, text: project.title }),
         el('p', { text: project.summary || project.shortDescription }),
         el('ul', { class: 'card__tags', 'aria-label': 'Technologies used' },
-          project.technologies.map(t => el('li', { 'data-tech': t.key, text: t.label })))),
+          project.technologies.map(t => el('li', { 'data-tech': t.key, text: t.label }))),
+        actions),
       ...grids);
   };
 
