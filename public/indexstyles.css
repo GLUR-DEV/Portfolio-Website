@@ -139,13 +139,9 @@ ul { margin: 0; padding: 0; list-style: none; }
   padding-bottom: 28px;
 }
 
-.logo {
-  font-family: var(--font-mono);
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--green);
-}
-.site-footer .logo { font-size: 18px; }   /* slightly smaller beside the footer text */
+.logo { display: inline-block; line-height: 0; }
+.logo img { display: block; height: 70px; width: auto; }
+.site-footer .logo img { height: 35px; display: inline-block; vertical-align: middle; }
 
 .nav { display: flex; flex-wrap: wrap; gap: 32px; font-size: 16px; }
 
@@ -643,6 +639,9 @@ button.btn:disabled { opacity: 0.6; cursor: not-allowed; }
     padding-bottom: 16px;
   }
   .nav { justify-content: center; gap: 20px; }
+
+  .logo img { height: 28px; }
+  .site-footer .logo img { height: 22px; }
 
   /* Hero: one column with all content centred */
   .hero {

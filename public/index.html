@@ -11,6 +11,8 @@
   <title>GLUR Solutions</title>
   <meta name="description" content="GLUR Solutions: C#, .NET and web development.">
 
+  <link rel="icon" type="image/png" href="https://glurstorage.blob.core.windows.net/images/GSIcon32.png">
+
   <!-- Fonts: Bricolage Grotesque (headings/body) and JetBrains Mono (code/labels) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -49,7 +51,12 @@
   <!-- ===== HEADER: logo + main navigation ===== -->
   <header class="site-header">
     <div class="container site-header__inner">
-      <a class="logo" href="#top">&lt; GLUR Solutions /&gt;</a>
+      <a class="logo" href="#top" aria-label="GLUR Solutions home">
+        <picture>
+          <source media="(max-width: 600px)" srcset="https://glurstorage.blob.core.windows.net/images/GSLogoMobile.png">
+          <img src="https://glurstorage.blob.core.windows.net/images/GSLogo.png" alt="GLUR Solutions" width="180" height="40">
+        </picture>
+      </a>
       <nav aria-label="Main">
         <ul class="nav">
           <li><a href="#work">Work</a></li>
@@ -272,7 +279,9 @@ app.<span class="fn">MapGet</span>("/skills", () =&gt;
   <footer class="site-footer">
     <div class="container site-footer__inner">
       <p>
-        <span class="logo">&lt; GLUR Solutions /&gt;</span>
+        <span class="logo">
+          <img src="https://glurstorage.blob.core.windows.net/images/GSLogoMobile.png" alt="GLUR Solutions" width="120" height="26">
+        </span>
         &nbsp;© 2026 · Built with Love by GLUR
       </p>
       <ul class="social">
