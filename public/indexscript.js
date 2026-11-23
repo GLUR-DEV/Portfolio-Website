@@ -4,6 +4,7 @@
    2b. Code stack on wide screens: random spawn, dragging, glowing connectors
    3. Work card reveal      3b. Card cover takeover layer      3c. Skill pill entrance
    3d. Contact entrance (3, 3c and 3d replay each time they scroll back into view, see inView)
+   3e. Hero entrance, line by line (plays once)
    4. Active nav link
    5. Stack pill toggles, project filtering and the mobile project limit
    6. Contact form (sends the message to the server, which stores it in the D1 database)
@@ -296,6 +297,28 @@
      Each card gets a decorative .card__takeover layer holding the full cover and a caption. The CSS
      (section 7, "Cover takeover") unfolds it over the card on hover. The cover is read from the
      background-image content.js already set on .card__image, so nothing else needs to change. */
+  /* A card with little text is shorter than the hover layout needs: the unfolded cover, the title, the whole
+     description and the tags band all have to fit. fitCard raises the card's min-height to exactly what that
+     layout needs, so the band always sits below the bottom of the description. Cards that already have room
+     keep their natural height, and nothing is changed while a card is hidden by the filter. */
+  function fitCard(card) {
+    const body = card.querySelector('.card__takeover-body');
+    if (!body || !card.offsetWidth) return;
+    const gap = body.querySelector('.card__takeover-gap');
+    const title = body.querySelector('.card__takeover-title');
+    const desc = body.querySelector('.card__takeover-desc');
+    const foot = body.querySelector('.card__takeover-foot');
+    if (!gap || !title || !desc || !foot) return;
+    const px = (el, prop) => parseFloat(getComputedStyle(el)[prop]) || 0;
+    const need = gap.offsetHeight + px(gap, 'marginBottom')
+      + title.offsetHeight
+      + px(desc, 'marginTop') + desc.scrollHeight
+      + foot.offsetHeight
+      + px(body, 'paddingBottom')
+      + (card.offsetHeight - card.clientHeight);          // the card's own border
+    card.style.minHeight = Math.ceil(need) + 'px';
+  }
+
   cards.forEach(card => {
     const thumb = card.querySelector('.card__image');
     const link = card.querySelector('.card__link');
@@ -311,14 +334,22 @@
       img.src = match[1];
       img.alt = '';
       img.decoding = 'async';
+      // The title is placed right under the unfolded cover, so the CSS needs the cover's real shape
+      const setRatio = () => {
+        if (img.naturalWidth && img.naturalHeight) layer.style.setProperty('--cover-ratio', img.naturalWidth / img.naturalHeight);
+        fitCard(card);                                    // the cover's shape decides how tall the spacer is
+      };
+      img.addEventListener('load', setRatio);
+      if (img.complete) setRatio();
       layer.append(img);
     } else {
       layer.classList.add('card__takeover--empty');   // no cover yet: placeholder grey
     }
 
-    // Text below the cover, copied from the card itself: title, description (two lines at most, set in
-    // the CSS) and the tags with a "View" cue on the right. A tag is green only while its stack pill is
-    // selected (applyFilter, section 5, switches that on).
+    // Text below the cover, copied from the card itself: a spacer as tall as the cover, then the title and
+    // the full description right under the image, then the tags with a "View" cue on the right, anchored
+    // to the bottom of the card. A tag is green only while its stack pill is selected (applyFilter,
+    // section 5, switches that on).
     const body = document.createElement('div');
     body.className = 'card__takeover-body';
 
@@ -348,11 +379,29 @@
     foot.className = 'card__takeover-foot';
     foot.append(tagList, cta);
 
-    body.append(title, desc, foot);
+    const gap = document.createElement('div');
+    gap.className = 'card__takeover-gap';
+
+    body.append(gap, title, desc, foot);
     layer.append(body);
 
     card.append(layer);
   });
+
+  // Fit every card now, again once the fonts have loaded (they change the text height), and whenever a
+  // card's width changes: a window resize, or the filter showing a card that was hidden.
+  cards.forEach(fitCard);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => cards.forEach(fitCard));
+  if ('ResizeObserver' in window) {
+    const widths = new WeakMap();
+    const watch = new ResizeObserver(entries => entries.forEach(e => {
+      const w = Math.round(e.contentRect.width);
+      if (widths.get(e.target) !== w) { widths.set(e.target, w); fitCard(e.target); }
+    }));
+    cards.forEach(card => watch.observe(card));
+  } else {
+    window.addEventListener('resize', () => cards.forEach(fitCard));
+  }
 
   /* ---------- 3c. Skill pill entrance ----------
      The pills rise and fade in, staggered by position, each time the Stack section scrolls into view
@@ -375,6 +424,103 @@
     els => els.forEach(el => el.classList.add('is-visible')),
     el => el.classList.remove('is-visible')
   );
+
+  /* ---------- 3e. Hero entrance ----------
+     The hero text rises and fades in one LINE at a time (CSS section 9b), once, when the hero first comes
+     into view. The headline and the summary are wrapped by the browser, so splitLines measures where the lines
+     break at the current width, then puts each line in its own block so it can animate on its own. It runs
+     again when the width changes or the fonts load, and only rebuilds when the breaks actually move. The
+     text is never altered, only the way it is split, so screen readers still read it as one sentence. */
+  const heroText = document.querySelector('.hero__text');
+  if (heroText) {
+    // Measures where a block of text wraps, using a hidden copy so the real element is left alone
+    const measureLines = (el, text) => {
+      const probe = el.cloneNode(false);
+      probe.removeAttribute('id');
+      probe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;max-width:none;width:' +
+        el.getBoundingClientRect().width + 'px';
+      const spans = text.split(' ').map((word, i, all) => {
+        const s = document.createElement('span');
+        s.textContent = word;
+        probe.append(s);
+        if (i < all.length - 1) probe.append(' ');
+        return s;
+      });
+      el.after(probe);
+      const lines = [];
+      let top = null;
+      spans.forEach(s => {
+        if (top === null || Math.abs(s.offsetTop - top) > 2) { lines.push([]); top = s.offsetTop; }
+        lines[lines.length - 1].push(s.textContent);
+      });
+      probe.remove();
+      return lines.map(words => words.join(' '));
+    };
+
+    // Splits one element into line blocks; returns its list of lines (rebuilt only if the breaks changed)
+    const splitLines = el => {
+      const text = (el.dataset.text = el.dataset.text || el.textContent.trim().replace(/\s+/g, ' '));
+      const lines = measureLines(el, text);
+      const key = lines.join('|');
+      if (el.dataset.lines !== key) {
+        el.dataset.lines = key;
+        el.textContent = '';
+        lines.forEach((line, i) => {
+          const block = document.createElement('span');
+          block.className = 'hero-line hr';
+          block.textContent = line;
+          el.append(block);
+          if (i < lines.length - 1) el.append(' ');
+        });
+        return { lines: el.querySelectorAll('.hero-line'), changed: true };
+      }
+      return { lines: el.querySelectorAll('.hero-line'), changed: false };
+    };
+
+    const heroLines = () => {
+      const h1 = heroText.querySelector('h1');
+      const summary = heroText.querySelector('.hero__summary');
+      const a = h1 ? splitLines(h1) : { lines: [], changed: false };
+      const b = summary ? splitLines(summary) : { lines: [], changed: false };
+
+      // Everything that rises, in reading order, with its delay (about 1.3s end to end at three lines each)
+      let delay = 0;
+      const rise = (els, step) => els.forEach(el => { el.classList.add('hr'); el.style.setProperty('--d', delay.toFixed(2) + 's'); delay += step; });
+      const tagline = heroText.querySelector('.hero__tagline');
+      if (tagline) rise([tagline], 0);
+      delay = 0.1;
+      rise(a.lines, 0.1);
+      delay += 0.05;
+      rise(b.lines, 0.08);
+      delay += 0.04;
+      rise(heroText.querySelectorAll('.hero__actions .btn'), 0.08);
+      rise(heroText.querySelectorAll('.social'), 0.08);
+      return a.changed || b.changed;
+    };
+
+    heroLines();
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => { if (heroLines()) heroText.classList.add('is-settled'); });
+    }
+    // A width change can move the line breaks: re-split without replaying the entrance
+    let heroWidth = heroText.getBoundingClientRect().width;
+    let heroFrame = 0;
+    window.addEventListener('resize', () => {
+      cancelAnimationFrame(heroFrame);
+      heroFrame = requestAnimationFrame(() => {
+        const w = heroText.getBoundingClientRect().width;
+        if (Math.abs(w - heroWidth) < 1) return;
+        heroWidth = w;
+        if (heroLines()) heroText.classList.add('is-settled');
+      });
+    });
+
+    inView(
+      [heroText],
+      els => els.forEach(el => el.classList.add('is-visible')),
+      () => {}                                   // plays once: scrolling back up does not replay it
+    );
+  }
 
   /* ---------- 4. Active nav link ----------
      Highlights the nav item for the section whose top has passed a line

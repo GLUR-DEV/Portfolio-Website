@@ -658,12 +658,25 @@ ul { margin: 0; padding: 0; list-style: none; }
   opacity: 0;
   transition: opacity 0.3s ease 0.15s;
 }
-/* Text below the cover: pinned to the bottom of the card. Title, description and footer each start
-   10px low and transparent, and fade up in turn (the delays are in the hover rules below). */
+/* Text below the cover. The body fills the layer as a column: an invisible spacer exactly as tall as the
+   unfolded cover, so the title starts right under the image, then the title and the full description
+   stacked under it, then the tags and "View" cue pushed to the bottom of the card. Any spare height sits
+   between the description and the tags, never between the image and the text. Title, description and
+   footer each start 10px low and transparent, and fade up in turn (the delays are in the hover rules
+   below). */
 .card__takeover-body {
   position: absolute;
-  left: 20px; right: 20px; bottom: 22px;
+  inset: 0;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px 22px;
+}
+.card__takeover-gap {
+  flex: none;
+  width: calc(100% + 40px);            /* undo the body's side padding: as wide as the cover */
+  margin: 0 -20px 14px;
+  aspect-ratio: var(--cover-ratio, 16 / 10);   /* set from the cover's own size by indexscript.js */
 }
 .card__takeover-title,
 .card__takeover-desc,
@@ -674,12 +687,22 @@ ul { margin: 0; padding: 0; list-style: none; }
 }
 .card__takeover-title { font-size: 20px; font-weight: 700; line-height: 1.3; color: var(--green); }
 .card__takeover-desc {
-  margin: 4px 0 10px;
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow: hidden;                    /* only ever clips if a card is too short for the whole description, so it can't run over the tags */
+  margin: 4px 0 0;
   font-size: 14px;
   line-height: 1.45;
-  color: var(--text-muted);            /* full description, no line limit: the block grows upward from the bottom into the free space under the cover */
+  color: var(--text-muted);            /* full description, no line limit */
 }
-.card__takeover-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.card__takeover-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;                    /* anchors the tags and "View" cue to the bottom of the card */
+  padding-top: 12px;
+}
 .card__takeover-tags { display: flex; flex-wrap: wrap; gap: 8px; }
 .card__takeover-tags li {
   padding: 4px 10px;                   /* same pill shape and size as the resting .card__tags li */
@@ -964,6 +987,22 @@ button.btn:disabled { opacity: 0.6; cursor: not-allowed; }
 }
 @keyframes contact-slide {
   from { opacity: 0; transform: translateX(-18px); }
+}
+
+/* Hero entrance (class .is-visible on .hero__text). Rise and fade, one line at a time: indexscript.js wraps
+   each line of the headline and the summary in a .hero-line block and tags every piece (.hr) with its own
+   delay in --d. In order: tagline, headline lines, summary lines, the two buttons, the social links; all
+   landed in about 1.3s. "translate" (not "transform") and the "backwards" fill keep the button hover and
+   press effects working. .is-settled stops the entrance replaying when the lines are re-split on resize. */
+.js .hero__text:not(.is-visible) .hr { opacity: 0; }
+.js .hero__text.is-visible .hr {
+  animation: hero-rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  animation-delay: var(--d, 0s);
+}
+.js .hero__text.is-settled .hr { animation: none; }
+.hero-line { display: block; }
+@keyframes hero-rise {
+  from { opacity: 0; translate: 0 26px; }
 }
 
 /* ---------- 9c. Lava lamp background ----------
