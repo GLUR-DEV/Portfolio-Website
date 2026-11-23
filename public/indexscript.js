@@ -2,6 +2,7 @@
    Portfolio landing page – JavaScript (motion)
    1. Sticky header state   2. Code typing effect (one window, three stacked on wide screens)
    3. Work card reveal      3b. Card cover takeover layer      3c. Skill pill entrance
+   3d. Contact entrance (3, 3c and 3d replay each time they scroll back into view, see inView)
    4. Active nav link
    5. Stack pill toggles, project filtering and the mobile project limit
    6. Contact form (sends the message to the server, which stores it in the D1 database)
@@ -15,6 +16,38 @@
   document.documentElement.classList.add('js-ready');
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Scroll-in replay helper ----------
+     Used by the card, skill pill and contact entrances. inView(elements, onEnter, onLeave) calls
+     onEnter([...]) with the elements that have just come into view (at least 20% showing; several can
+     arrive together, in page order) and onLeave(element) once an element has left the screen completely.
+     Because the entrance is switched off again on leaving, it plays again the next time the visitor
+     scrolls back to it. With reduced motion, or no IntersectionObserver, everything is shown straight
+     away and never hidden again. */
+  const inView = (elements, onEnter, onLeave) => {
+    const list = Array.from(elements);
+    if (!list.length) return;
+    if (reduceMotion || !('IntersectionObserver' in window)) { onEnter(list); return; }
+    const shown = new Set();
+    const observer = new IntersectionObserver(entries => {
+      const entering = [];
+      entries.forEach(entry => {
+        const el = entry.target;
+        if (entry.intersectionRatio >= 0.2 && !shown.has(el)) {
+          shown.add(el);
+          entering.push(el);
+        } else if (entry.intersectionRatio === 0 && shown.has(el)) {
+          shown.delete(el);
+          onLeave(el);
+        }
+      });
+      if (entering.length) {
+        entering.sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1);
+        onEnter(entering);
+      }
+    }, { threshold: [0, 0.2] });
+    list.forEach(el => observer.observe(el));
+  };
 
   /* ---------- 1. Sticky header state ----------
      Adds .is-scrolled once the page moves, which the CSS uses to
@@ -100,22 +133,18 @@
   }
 
   /* ---------- 3. Work card reveal ----------
-     Cards fade up when they scroll into view, staggered by position. */
+     Cards fade up when they scroll into view, and again each time they scroll back into view. Cards
+     that arrive together are staggered in page order: --i is the card's place in that group (0, 1, 2 ...),
+     so a card scrolling in on its own never waits behind the others. */
   const cards = document.querySelectorAll('.card');
-  cards.forEach((card, i) => card.style.setProperty('--i', i));
-  if (reduceMotion || !('IntersectionObserver' in window)) {
-    cards.forEach(card => card.classList.add('is-visible'));
-  } else {
-    const reveal = new IntersectionObserver((entries, obs) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
-          obs.unobserve(entry.target);               // only animate once
-        }
-      });
-    }, { threshold: 0.2 });
-    cards.forEach(card => reveal.observe(card));
-  }
+  inView(
+    cards,
+    entering => entering.forEach((card, i) => {
+      card.style.setProperty('--i', i);
+      card.classList.add('is-visible');
+    }),
+    card => card.classList.remove('is-visible')
+  );
 
   /* ---------- 3b. Cover takeover layer ----------
      Each card gets a decorative .card__takeover layer holding the full cover and a caption. The CSS
@@ -141,38 +170,65 @@
       layer.classList.add('card__takeover--empty');   // no cover yet: placeholder grey
     }
 
-    const caption = document.createElement('div');
-    caption.className = 'card__takeover-cap';
-    const title = document.createElement('span');
+    // Text below the cover, copied from the card itself: title, description (two lines at most, set in
+    // the CSS) and the tags with a "View" cue on the right. A tag is green only while its stack pill is
+    // selected (applyFilter, section 5, switches that on).
+    const body = document.createElement('div');
+    body.className = 'card__takeover-body';
+
+    const title = document.createElement('div');
     title.className = 'card__takeover-title';
     title.textContent = link.textContent;
+
+    const desc = document.createElement('div');
+    desc.className = 'card__takeover-desc';
+    desc.textContent = (card.querySelector('p:not(.card__cta)') || {}).textContent || '';
+
+    const tagList = document.createElement('ul');
+    tagList.className = 'card__takeover-tags';
+    Array.from(card.querySelectorAll('.card__tags li')).slice(0, 3).forEach(tag => {
+      const li = document.createElement('li');
+      li.textContent = tag.textContent;
+      tagList.append(li);
+    });
+
     const cta = document.createElement('span');
     cta.className = 'card__takeover-cta';
-    cta.textContent = 'View project \u2192';
-    caption.append(title, cta);
-    layer.append(caption);
+    const arrow = document.createElement('span');
+    arrow.textContent = '\u2192';
+    cta.append('View ', arrow);
+
+    const foot = document.createElement('div');
+    foot.className = 'card__takeover-foot';
+    foot.append(tagList, cta);
+
+    body.append(title, desc, foot);
+    layer.append(body);
 
     card.append(layer);
   });
 
   /* ---------- 3c. Skill pill entrance ----------
-     The pills rise and fade in, staggered by position, the first time the Stack section scrolls into
-     view (the CSS hides them only when JS is running). */
+     The pills rise and fade in, staggered by position, each time the Stack section scrolls into view
+     (the CSS hides them only when JS is running). */
   const pillList = document.querySelector('.pills');
   if (pillList) {
     pillList.querySelectorAll('li').forEach((li, i) => li.style.setProperty('--i', i));
-    if (reduceMotion || !('IntersectionObserver' in window)) {
-      pillList.classList.add('is-visible');
-    } else {
-      const revealPills = new IntersectionObserver((entries, obs) => {
-        if (entries.some(entry => entry.isIntersecting)) {
-          pillList.classList.add('is-visible');
-          obs.disconnect();                          // only animate once
-        }
-      }, { threshold: 0.2 });
-      revealPills.observe(pillList);
-    }
+    inView(
+      [pillList],
+      els => els.forEach(el => el.classList.add('is-visible')),
+      el => el.classList.remove('is-visible')
+    );
   }
+
+  /* ---------- 3d. Contact entrance ----------
+     The label, intro line, links, form panel and fields play their entrance sequence (CSS section 9b)
+     each time the Contact section scrolls into view. */
+  inView(
+    document.querySelectorAll('.contact'),
+    els => els.forEach(el => el.classList.add('is-visible')),
+    el => el.classList.remove('is-visible')
+  );
 
   /* ---------- 4. Active nav link ----------
      Highlights the nav item for the section whose top has passed a line
@@ -238,6 +294,13 @@
       card.hidden = !visible;                         // hidden cards drop out of the grid
       if (visible) shown += 1;
       tags.forEach(tag => tag.classList.toggle('is-match', selectedStack.has(tag.dataset.tech)));
+
+      // The tags shown on hover (section 3b) copy the card's tags in the same order, so they light up
+      // green only when the matching tag on the card is lit, i.e. its stack pill is selected
+      const hoverTags = card.querySelectorAll('.card__takeover-tags li');
+      tags.forEach((tag, i) => {
+        if (hoverTags[i]) hoverTags[i].classList.toggle('is-on', selectedStack.has(tag.dataset.tech));
+      });
     });
 
     // Status line: empty (hidden) unless filtering or limited, otherwise a count or a "none" message
@@ -277,6 +340,17 @@
   if (form) {
     const formStatus = form.querySelector('.form__status');
     const submitBtn = form.querySelector('button[type="submit"]');
+
+    // Character counter in the Message label ("0 / 5000"), updated as the visitor types and after a reset
+    const messageBox = form.querySelector('textarea[name="message"]');
+    const counter = form.querySelector('.field__count');
+    if (messageBox && counter) {
+      const limit = messageBox.maxLength > 0 ? messageBox.maxLength : 5000;
+      const updateCount = () => { counter.textContent = `${messageBox.value.length} / ${limit}`; };
+      messageBox.addEventListener('input', updateCount);
+      form.addEventListener('reset', () => setTimeout(updateCount));   // after the reset has cleared the box
+      updateCount();
+    }
 
     let startedAt = null;                       // set when the visitor first clicks into the form
     form.addEventListener('focusin', () => { if (!startedAt) startedAt = Date.now(); });
