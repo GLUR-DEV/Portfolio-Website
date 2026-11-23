@@ -6,12 +6,13 @@ There is no framework and no build step. The `public/` folder is the site, and t
 
 ## What it does
 
-- **Landing page** with a hero and typed code windows, skill pills that filter the project cards, a contact form, an About section and an animated lava-lamp background drawn on `<canvas>`.
+- **Landing page** with an animated hero and floating code windows, skill pills that filter the project cards, a contact form, an About section and an animated lava-lamp background drawn on `<canvas>`.
+- **Motion that replays and respects you.** Project cards, skill pills and the contact section animate in each time they scroll into view, the hero plays once, and every animation is switched off for visitors who prefer reduced motion. See [Motion and interaction](#motion-and-interaction).
 - **One shared project page** (`projects.html?project=<slug>`) that shows whichever project the address names. Each project has a design-process slideshow, an improvements slideshow, feedback and "what improved" notes, a details panel (role, tools, timeframe) and two optional buttons: **Go to live site** and **See the design notes**.
 - **Slideshows** that advance every 5 seconds with a countdown bar and pause button, plus arrows, stage buttons, arrow/Home/End keys, swipe, and an enlarged (lightbox) view.
 - **Contact form** that validates on the server, filters spam, saves every message to Cloudflare D1 and emails an alert.
 - **Content from a database** without a live API: pages read JSON snapshots written by the admin app, so visitors never touch the database.
-- **Accessible and responsive**: skip link, labelled landmarks, visible focus, `prefers-reduced-motion` handled in CSS and JS, and layouts that change at 1440px, 900px and 600px.
+- **Accessible and responsive**: skip link, labelled landmarks, visible focus, `prefers-reduced-motion` handled in CSS and JS, decorative code windows hidden from assistive technology, and layouts that change at 1440px, 900px, 800px, 600px and 550px. Hover animations only run on devices that can really hover, so a tap on a phone never leaves one stuck on.
 
 ## How it fits together
 
@@ -46,9 +47,9 @@ public/                  The website (the only public folder)
   index.html             Landing page
   projects.html          Shared project page (placeholder projects as a fallback)
   content.js             Fetches content from /api and builds the cards, pills and project page
-  indexscript.js         Header, code typing, card reveal, nav highlight, skill filter, contact form, lava lamp
+  indexscript.js         Header, code windows, scroll-in animations, hero entrance, card hover layer, skill pills, nav highlight, skill filter, contact form, lava lamp
   projectsscript.js      Project picker, slideshows, enlarged-picture view
-  indexstyles.css        Design tokens and shared styles
+  indexstyles.css        Design tokens, shared styles and all landing page motion
   projectsstyles.css     Project page styles
 src/
   worker.js              /api/contact, content proxy and request routing
@@ -65,11 +66,31 @@ wrangler.toml            Worker, assets, D1, email and variable configuration
 - **Safe fallback.** If `/api` is slow (4 second timeout), down or not configured, the placeholder HTML already in the page is left as it is and the other scripts still load, so the site is never blank.
 - **No injected markup.** Database text is added with `textContent` and `setAttribute`, never as HTML. Image addresses must be `https://` or a plain path on the site, and the two project button addresses must be `https://`.
 - **Project addresses.** `projects.html?project=<slug>` shows one project. Old links such as `?project=one` map to `project-one`, and an unknown name shows "Project not found".
+- **Images.** The header and footer logos (a smaller version on phones), the favicon and project screenshots are served from Azure Blob storage, not from this repository.
+- **Mobile project limit.** At 600px and narrower, at most 3 projects show at once, and the status line says so (for example "Showing the first 3 of 5 projects").
 - **Design.** Bricolage Grotesque for text and JetBrains Mono for labels and code. Tokens (colours, type, radii) are CSS variables at the top of `indexstyles.css`; the design uses one green accent and a sparing terracotta.
+
+## Motion and interaction
+
+All of this lives in `indexscript.js` and `indexstyles.css` (the file headers list each section). Everything is skipped for `prefers-reduced-motion` visitors, who see the final state straight away, and the page works with JavaScript off because things are only hidden before they animate in while JS is running.
+
+- **Scroll-in replay.** One helper (`inView`) switches an entrance on when an element is at least 20% visible and off again once it has left the screen completely, so it plays again the next time the visitor scrolls back. Project cards, skill pills and the contact section use it, staggered by order. The hero entrance is separate and plays once.
+- **Hero entrance.** The tagline, each line of the headline and summary, the two buttons and the social links rise in one after another in about 1.3s. The script measures where the headline and summary wrap at the current width and splits them into lines, re-splitting on resize or font load without replaying. The text itself is untouched, so screen readers still read it as one sentence.
+- **Hero buttons and social links.** "View my work" turns pale and slides in a down arrow. "Get in touch" fills green from the left and an envelope tilts in. The GitHub and LinkedIn chips (hero, contact and footer) fill green on hover. All of them press down slightly on click. Hover versions only run where a pointer can hover (`@media (hover: hover)`); on touch screens a tap shows just the press-down. Keyboard focus triggers the same animations. Under 1440px the "Get in touch" outline is green so it stands out against the lava lamp.
+- **Code windows.** Three decorative windows (C#, JavaScript, SQL), each with a title bar, file tab, language badge, line numbers and status bar.
+  - **800px and wider:** they float in the right-hand column and out into the free space to its right, as far as the window edge allows without touching the hero text, header or Skills heading. They spawn at slightly random spots on every load, can be dragged with mouse, pen or touch (kept inside the area), and are joined by glowing connector lines that sit underneath so they never cross the code. The entrance takes about 1.3s.
+  - **Under 800px:** one C# window sits under the hero text with the same look, no dragging or connectors, and its code is typed out.
+  - **Never scrolls sideways.** The window measures its own width (a container query on `.code-stack`) and scales its font to fit the longest line. When even the smallest comfortable size would not fit, window 1 swaps to a short 3-line snippet.
+  - The windows are `aria-hidden` and dragging is pointer-only, because they hold nothing that is not also in the Stack section.
+- **Project cards.** On hover or keyboard focus the cover unfolds from its 120px band to its full 16:10 size over the card, and the title, full description and tags with a "View" cue fade in below it. `indexscript.js` builds this layer for each card from the cover and text already on the card, so `content.js` needs no change. Nothing moves in the layout, and short cards get a minimum height that fits the unfolded layout.
+- **Skill pills.** They rise and fade in one after another. Hovering (with a mouse) opens a green dot and grows the pill slightly. A selected pill always shows the dot, and on touch screens the dot shows on selected pills only. Pills are a little smaller under 550px.
+  - **"See more".** If the pills would need 3 or more rows, two rows are kept and a "See more" pill takes the place of the last pill on row 2. Pressing it shows the rest below (and it becomes "See less"). It re-measures on resize, rotation and font load, and the entrance plays once only while this layout is active. It is a plain button, not a filter. A selected pill that is hidden behind it still filters the projects.
+- **Contact section.** The label, intro, links, form panel and each field play an entrance sequence when the section scrolls into view. While someone types, the panel gets a faint green edge, the active label turns green, the message label shows a live "0 / 5000" counter, and the send button lifts and slides in a paper plane, with a disabled state while sending.
+- **Lava lamp.** Canvas metaballs. On screens wider than 1440px two canvases fill the empty page margins. At 1440px and narrower, where the margins are too small, one full-page canvas sits behind the content, dimmed and darkened so text and panels keep their contrast.
 
 ## Contact form
 
-The form posts JSON to `/api/contact`. Without JavaScript it falls back to a `mailto:` link. The Worker runs these checks in order:
+The form posts JSON to `/api/contact`. Without JavaScript it falls back to a `mailto:` link. In the browser, native validation runs first, then the form sends the message along with the hidden honeypot value and the time it took to fill in. A rejected message shows the server's reason in the status line, and any other failure points the visitor to the email address. The Worker runs these checks in order:
 
 1. **Honeypot.** A filled hidden field gets a normal "ok" reply and nothing is saved.
 2. **Basics.** Name and message are required (name up to 100 characters, message 10 to 5000).
@@ -139,6 +160,10 @@ Apply them to the live database with `npx wrangler d1 migrations apply glur-db -
 Deploy the Worker and `public/` together with `npx wrangler deploy`. The Worker `name` in `wrangler.toml` must match the Worker in the Cloudflare dashboard.
 
 After changing anything in `wrangler.toml`, redeploy so the new bindings and variables take effect. Content edits do not need a deploy: they go through the admin app and appear within about two minutes, once the edge and browser caches (60 seconds each) expire.
+
+## Versions
+
+Each release is a commit whose message starts with the version (for example `v1.5.20: ...`), with matching release notes on the GitHub Releases page.
 
 ## Content and caching
 
