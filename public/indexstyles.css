@@ -172,6 +172,11 @@ ul { margin: 0; padding: 0; list-style: none; }
   padding-bottom: 64px;
 }
 
+/* Two equal columns (text and code windows) from 800px; a single column below that, with the code
+   window under the text. */
+@media (min-width: 800px) { .hero { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 799px) { .hero { grid-template-columns: minmax(0, 1fr); gap: 36px; } }
+
 .hero__tagline {
   margin: 0 0 20px;
   font-family: var(--font-mono);
@@ -224,7 +229,6 @@ ul { margin: 0; padding: 0; list-style: none; }
   transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease,
               transform 0.2s ease, box-shadow 0.25s ease, background-size 0.35s ease;
 }
-.btn--mail { border-color: var(--border); }
 
 .btn__arrow {
   display: inline-block;
@@ -235,27 +239,41 @@ ul { margin: 0; padding: 0; list-style: none; }
   transform: translateY(-4px);
   transition: max-width 0.3s ease, margin-left 0.3s ease, opacity 0.25s ease, transform 0.3s ease;
 }
-.btn--arrow:hover,
+/* The hover animations below run only where a pointer can really hover (mouse, trackpad). On touch
+   screens a tap leaves the browser "hovering" until the next tap, so the animation would stick; there
+   only keyboard focus and the press-down at the end of this block apply. */
 .btn--arrow:focus-visible {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(127, 184, 150, 0.3);
 }
-.btn--arrow:hover .btn__arrow,
 .btn--arrow:focus-visible .btn__arrow {
   max-width: 20px;
   margin-left: 10px;
   opacity: 1;
   transform: translateY(0);
 }
+@media (hover: hover) {
+  .btn--arrow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(127, 184, 150, 0.3);
+  }
+  .btn--arrow:hover .btn__arrow {
+    max-width: 20px;
+    margin-left: 10px;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 .btn--mail {
+  --mail-edge: var(--border);             /* resting outline colour (brightened under 1440px, section 10) */
+  border-color: var(--mail-edge);
   background-color: transparent;
   background-image: linear-gradient(var(--green), var(--green));
   background-repeat: no-repeat;
   background-position: left center;
   background-size: 0% 100%;               /* the green fill, hidden until hover */
 }
-.btn--mail:hover,
 .btn--mail:focus-visible {
   background-size: 100% 100%;
   color: var(--green-ink);
@@ -271,16 +289,37 @@ ul { margin: 0; padding: 0; list-style: none; }
   opacity: 0;
   transition: width 0.3s ease, margin-left 0.3s ease, opacity 0.25s ease, transform 0.25s ease;
 }
-.btn--mail:hover .btn__mail,
 .btn--mail:focus-visible .btn__mail {
   width: 18px;
   margin-left: 10px;
   opacity: 1;
   transform: rotate(-10deg);
 }
+@media (hover: hover) {
+  .btn--mail:hover {
+    background-size: 100% 100%;
+    color: var(--green-ink);
+    border-color: var(--green);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(127, 184, 150, 0.28);
+  }
+  .btn--mail:hover .btn__mail {
+    width: 18px;
+    margin-left: 10px;
+    opacity: 1;
+    transform: rotate(-10deg);
+  }
+}
 
 .btn--arrow:active,
 .btn--mail:active { transform: translateY(0) scale(0.97); }   /* press-down on click or touch */
+
+/* Touch screens: undo the global sticky :hover colours from section 5 and the base styles, so a tap only
+   shows the press-down above and not the hover look. */
+@media (hover: none) {
+  .btn--arrow:hover { background: var(--green); color: var(--green-ink); }
+  .btn--mail:hover { color: var(--text); border-color: var(--mail-edge); }
+}
 
 /* Social links (shared by hero, contact section and footer) */
 .social {
@@ -293,7 +332,8 @@ ul { margin: 0; padding: 0; list-style: none; }
 /* Off-site and email links are green "chips" by default (tinted fill, green outline, an arrow
    or envelope icon) so they stand out from normal text. On hover, keyboard focus or touch press
    a solid green fill sweeps in from the left, the text turns dark, the chip lifts and the icon
-   moves. :active covers touch screens, which have no hover. */
+   moves. The hover version only runs where a pointer can hover: on touch screens a tap just shows the
+   small press-down (:active), never the hover animation. */
 .social a {
   display: inline-flex;
   align-items: center;
@@ -311,14 +351,21 @@ ul { margin: 0; padding: 0; list-style: none; }
   transition: color 0.25s ease, background-size 0.3s ease, border-color 0.25s ease,
               transform 0.2s ease, box-shadow 0.25s ease;
 }
-.social a:hover,
-.social a:focus-visible,
-.social a:active {
+.social a:focus-visible {
   color: var(--green-ink);
   border-color: var(--green);
   background-size: 100% 100%;
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(127, 184, 150, 0.28);
+}
+@media (hover: hover) {
+  .social a:hover {
+    color: var(--green-ink);
+    border-color: var(--green);
+    background-size: 100% 100%;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(127, 184, 150, 0.28);
+  }
 }
 .social a:active { transform: translateY(0) scale(0.97); }   /* pressed feel on touch */
 .social a[target="_blank"]::after {                /* arrow marks links that leave the site */
@@ -327,9 +374,8 @@ ul { margin: 0; padding: 0; list-style: none; }
   display: inline-block;
   transition: transform 0.2s ease;
 }
-.social a[target="_blank"]:hover::after,
-.social a[target="_blank"]:focus-visible::after,
-.social a[target="_blank"]:active::after { transform: translate(3px, -3px); }
+.social a[target="_blank"]:focus-visible::after { transform: translate(3px, -3px); }
+@media (hover: hover) { .social a[target="_blank"]:hover::after { transform: translate(3px, -3px); } }
 .social a[href^="mailto:"]::before {               /* envelope icon marks email links */
   content: "";
   flex: none;
@@ -340,128 +386,164 @@ ul { margin: 0; padding: 0; list-style: none; }
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'%3E%3Crect x='3' y='5' width='18' height='14' rx='2'/%3E%3Cpath d='m3 7 9 6 9-6'/%3E%3C/svg%3E") center / contain no-repeat;
   transition: transform 0.2s ease;
 }
-.social a[href^="mailto:"]:hover::before,
-.social a[href^="mailto:"]:focus-visible::before,
-.social a[href^="mailto:"]:active::before { transform: rotate(-10deg) scale(1.15); }
+.social a[href^="mailto:"]:focus-visible::before { transform: rotate(-10deg) scale(1.15); }
+@media (hover: hover) { .social a[href^="mailto:"]:hover::before { transform: rotate(-10deg) scale(1.15); } }
 .hero .social { margin-top: 28px; }
 
-/* Code window card */
+/* Code windows. Every screen gets the same detailed window (title bar with dots, file tab and language
+   badge, line numbers, status bar). The text is never allowed to scroll sideways: the window measures
+   its own width (the .code-stack is a size container) and scales the font to fit the longest line of
+   the snippet being shown (--chars; a monospace character is about 0.6em wide). When even the smallest
+   comfortable font would not fit the full snippet, the window switches to a shorter one (window 1 has a
+   3-line version) and the padding shrinks a little (container query at the end of this block).
+   - 800px and over: all three windows float in the right-hand column (and out into the free space to its
+     right, which is the page margin on wide screens), spawn at slightly random spots, can be dragged around and are joined by glowing lines.
+   - Under 800px: one window (C#) sits under the hero text, with no dragging or lines. */
+.code-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  container-type: inline-size;
+}
 .code-card {
+  --oh: 72px;                           /* width used by borders, padding and the line-number gutter */
+  --chars: 61;                          /* longest code line (in characters) of the snippet shown */
+  --cw: min(560px, 100cqi);             /* window width */
+  width: var(--cw);
+  max-width: 100%;
   margin: 0;
-  padding: 24px;
+  padding: 0;
+  overflow: hidden;                     /* never scrolls: the text is scaled to fit instead */
   background: var(--surface);
   border: 1px solid #333936;
   border-radius: var(--radius-md);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: clamp(9px, calc((var(--cw) - var(--oh)) / (var(--chars) * 0.605)), 13px);
   line-height: 1.8;
   color: var(--text-muted);
-  overflow-x: auto;           /* long lines scroll instead of breaking the layout */
+  text-align: left;
 }
-.code-card pre { margin: 0; }
+.code-card pre { margin: 0; min-width: 0; }
+.code-card--1 { --lang: var(--green); }
+.code-card--2 { --lang: #d4a64f; }
+.code-card--3 { --lang: var(--terracotta); }
+.code-card--extra { display: none; }              /* windows 2 and 3 only show from 800px */
+.code-lines { display: none; }                    /* the connector layer only exists from 800px */
+.ln { display: block; min-height: 1.8em; }        /* one per code line, so each line can fade in */
+.code--compact, .compact-only { display: none; }  /* the short snippet / status text, see the container query below */
 
-/* Code stack. Below 1440px only the first window shows (typed out by indexscript.js). At 1440px and over
-   (the same point the lava lamp moves into the page margins) the stack turns into a free-floating area:
-   it grows into the right-hand page margin and indexscript.js (section 2b) places all three windows
-   inside it at slightly random spots, lets the visitor drag them, and draws glowing lines underneath.
-   The extra window chrome, the line numbers and the connector layer only exist on those wide screens. */
-.code-stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-.code-card--extra { display: none; }
-.code-card__tab, .code-card__badge, .code-card__gutter, .code-card__foot, .code-lines { display: none; }
-.ln { display: block; min-height: 1.8em; }   /* one per code line, so each line can fade in on wide screens */
-.code--compact { display: none; }   /* the short snippet only appears on mobile (section 10) */
-.code-card__dots { display: flex; gap: 8px; margin-bottom: 16px; }
-.code-card__dots span {
-  width: 11px; height: 11px;
-  border-radius: 50%;
-  background: var(--border);
+/* Title bar: window dots, file tab and language badge */
+.code-card__bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #1f2321;
+  border-bottom: 1px solid #333936;
 }
+.code-card__dots { display: flex; gap: 8px; margin: 0; flex: none; }
+.code-card__dots span { width: 11px; height: 11px; border-radius: 50%; background: var(--border); }
+.code-card__dots span:nth-child(1) { background: #c9695d; }
+.code-card__dots span:nth-child(2) { background: #d1a64f; }
+.code-card__dots span:nth-child(3) { background: var(--green); }
+.code-card__tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  margin-left: 12px;
+  padding: 4px 12px;
+  background: var(--surface);
+  border: 1px solid #333936;
+  border-radius: 6px 6px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #cfd8d2;
+  white-space: nowrap;
+}
+.code-card__tab::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 2px; background: var(--lang); }
+.code-card__badge {
+  flex: none;
+  margin-left: auto;
+  padding: 2px 9px;
+  border: 1px solid var(--lang);
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--lang);
+  white-space: nowrap;
+}
+
+/* Code with a line-number gutter, then a status bar */
+.code-card__body { display: flex; gap: 6px; padding: 16px 18px; }
+.code-card__gutter { flex: none; width: 28px; color: #5d6761; user-select: none; }
+.code-card__foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 14px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #7d8882;
+  white-space: nowrap;
+  background: #1f2321;
+  border-top: 1px solid #333936;
+}
+
 /* Syntax colouring */
 .kw { color: var(--terracotta); }   /* keywords */
 .fn { color: var(--green); }        /* method names */
 
-/* Wide screens (1440px and over): free-floating windows with detailed chrome and glowing connectors.
-   The left/top values are only the starting layout before indexscript.js runs; the script sets its own
-   random positions inline. */
-@media (min-width: 1440px) {
+/* Narrow windows (under about 515px wide): the short snippet for window 1 (3 lines, longest 34 characters;
+   window 2's longest line is 37), tighter padding and a slimmer title bar */
+@container (max-width: 515px) {
+  .code-card { --chars: 37; --oh: 58px; }
+  .code-card--1 .code--full { display: none; }
+  .code-card--1 .code--compact { display: block; }
+  .code-card--1 .full-only { display: none; }
+  .code-card--1 .compact-only { display: inline; }
+  .code-card__body { padding: 14px; }
+  .code-card__gutter { width: 22px; }
+  .code-card__bar { gap: 6px; padding: 8px 10px; }
+  .code-card__dots { gap: 6px; }
+  .code-card__dots span { width: 9px; height: 9px; }
+  .code-card__tab { margin-left: 6px; padding: 3px 8px; font-size: 11px; }
+  .code-card__badge { padding: 2px 7px; font-size: 10px; }
+  .code-card__foot { padding: 5px 10px; font-size: 10px; }
+}
+
+/* 800px and over: free-floating, draggable windows with glowing connectors. The left/top values are only
+   the starting layout before indexscript.js runs; the script sets its own random positions inline. */
+@media (min-width: 800px) {
+  /* The floating area is as big as the free space allows. Height: it stretches to the full height of the
+     hero row (never under 660px) and reaches 40px up and down into the hero's empty padding. Width:
+     the hero's right-hand column plus the empty space out to the right-hand edge of the window, stopping
+     24px short of that edge (so there is never a sideways scrollbar, even with a vertical scrollbar
+     showing). It never goes left, because the hero text is there. */
   .code-stack {
     position: relative;
-    height: 660px;
-    margin-right: calc((var(--container) - 100vw) / 2 - 8px);   /* grows into the right-hand margin, stopping 8px short of the window edge */
+    align-self: stretch;
+    min-height: 660px;
+    margin-block: -40px;
+    margin-right: calc(-1 * (max(0px, (100vw - var(--container)) / 2) + 8px));
   }
   .code-card {
+    --cw: min(560px, calc(100cqi - 28px));          /* leaves a little room to float sideways */
     position: absolute;
-    width: 560px;
-    max-width: 100%;
-    padding: 0;
-    overflow: hidden;
-    font-size: 13px;
     cursor: grab;
     user-select: none;
-    touch-action: none;                              /* dragging works with touch as well */
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+    touch-action: none;                             /* dragging works with touch as well */
     transition: box-shadow 0.25s ease, transform 0.25s ease;
   }
   .code-card--extra { display: block; }
-  .code-card--1 { --lang: var(--green);      left: 12px; top: 20px;  z-index: 1; }
-  .code-card--2 { --lang: #d4a64f;           left: 50px; top: 210px; z-index: 2; }
-  .code-card--3 { --lang: var(--terracotta); left: 90px; top: 400px; z-index: 3; }
+  .code-card--1 { left: 12px; top: 20px;  z-index: 1; }
+  .code-card--2 { left: 50px; top: 210px; z-index: 2; }
+  .code-card--3 { left: 90px; top: 400px; z-index: 3; }
   .code-card:hover { box-shadow: 0 22px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--green); }
   .code-card.is-front { transform: translateY(-4px); }
   .code-card.is-dragging { transform: translateY(-6px) scale(1.01); cursor: grabbing; }
-
-  /* Title bar: window dots, file tab and language badge */
-  .code-card__bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
-    background: #1f2321;
-    border-bottom: 1px solid #333936;
-  }
-  .code-card__dots { margin-bottom: 0; }
-  .code-card__dots span:nth-child(1) { background: #c9695d; }
-  .code-card__dots span:nth-child(2) { background: #d1a64f; }
-  .code-card__dots span:nth-child(3) { background: var(--green); }
-  .code-card__tab {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-left: 12px;
-    padding: 4px 12px;
-    background: var(--surface);
-    border: 1px solid #333936;
-    border-radius: 6px 6px 0 0;
-    font-size: 12px;
-    line-height: 1.4;
-    color: #cfd8d2;
-  }
-  .code-card__tab::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: var(--lang); }
-  .code-card__badge {
-    display: block;
-    margin-left: auto;
-    padding: 2px 9px;
-    border: 1px solid var(--lang);
-    border-radius: 999px;
-    font-size: 11px;
-    line-height: 1.4;
-    color: var(--lang);
-  }
-
-  /* Code with a line-number gutter, then a status bar */
-  .code-card__body { display: flex; gap: 6px; padding: 16px 18px; }
-  .code-card__gutter { display: block; flex: none; width: 28px; color: #5d6761; user-select: none; }
-  .code-card__body pre { min-width: 0; }
-  .code-card__foot {
-    display: flex;
-    justify-content: space-between;
-    padding: 6px 14px;
-    font-size: 11px;
-    line-height: 1.6;
-    color: #7d8882;
-    background: #1f2321;
-    border-top: 1px solid #333936;
-  }
 
   /* Glowing connector lines (the SVG is added by indexscript.js). They sit BELOW every window (z-index 0
      against the windows' 1 and up), so a line can only show in the gaps between windows and never over code. */
@@ -501,7 +583,6 @@ ul { margin: 0; padding: 0; list-style: none; }
   @keyframes codeLine { from { opacity: 0; translate: -6px 0; } to { opacity: 1; } }
   @keyframes codeFade { from { opacity: 0; } to { opacity: 1; } }
 }
-
 /* ---------- 6. Stack ---------- */
 .stack { padding-top: 24px; padding-bottom: 56px; }
 
@@ -534,17 +615,49 @@ ul { margin: 0; padding: 0; list-style: none; }
   opacity: 0;
   transition: width 0.25s ease, margin-right 0.25s ease, opacity 0.2s ease;
 }
-.pill:hover,
 .pill:focus-visible { transform: scale(1.06); border-color: var(--green); }
-.pill:hover::before,
 .pill:focus-visible::before,
 .pill[aria-pressed="true"]::before { width: 8px; margin-right: 8px; opacity: 1; }
+/* Mouse hover only: on touch screens (no real hover) the dot shows on SELECTED pills only */
+@media (hover: hover) {
+  .pill:hover { transform: scale(1.06); border-color: var(--green); }
+  .pill:hover::before { width: 8px; margin-right: 8px; opacity: 1; }
+}
 .pill:active { transform: scale(0.96); }
 .pill[aria-pressed="true"] {          /* selected state */
   border-color: var(--green);
   background: rgba(127, 184, 150, 0.16);
   color: var(--green);
 }
+
+/* Narrow screens: slightly smaller pills. indexscript.js (section 3c) also adds .pills--small on wider
+   screens whenever the pills would otherwise need 3 rows. */
+@media (max-width: 550px) {
+  .pills { gap: 8px; }
+  .pill { padding: 8px 15px; font-size: 13.5px; }
+}
+.pills--small { gap: 8px; }
+.pills--small .pill { padding: 8px 15px; font-size: 13.5px; }
+
+/* "See more": when the pills would need 3 rows, indexscript.js keeps two rows, puts this pill in place of
+   the last pill of row 2 and hides the rest (.is-extra) until it is pressed. It is a plain button, not a
+   skill filter, so it has no dot and no selected state. */
+.pill--more { color: var(--green); border-style: dashed; border-color: rgba(127, 184, 150, 0.6); }
+.pill--more::before { display: none; }
+.pill--more::after {
+  content: "\25BE";
+  content: "\25BE" / "";
+  margin-left: 8px;
+  font-size: 0.85em;
+  transition: transform 0.25s ease;
+}
+.pill--more[aria-expanded="true"]::after { transform: rotate(180deg); }
+.pills:not(.is-expanded) > li.is-extra { display: none; }
+.pills.is-expanded > li.is-extra {
+  animation: pillRise 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(var(--x, 0) * 50ms);
+}
+@keyframes pillRise { from { opacity: 0; transform: translateY(12px); } }
 
 /* ---------- 7. Work ---------- */
 .work { padding-bottom: 72px; }
@@ -1043,7 +1156,7 @@ button.btn:disabled { opacity: 0.6; cursor: not-allowed; }
 /* ---------- Full-page lava lamp (1440px and narrower) ----------
    Below this width the page margins are under ~120px, too small to show the lava, so the lamp
    moves behind the whole site instead (phones, tablets and small laptops). One canvas covers the
-   page and the right canvas is switched off. It is dimmed well down (24% opacity) so text stays
+   page and the right canvas is switched off. It is dimmed well down (20% opacity) so text stays
    readable, the content panels and footer are only slightly see-through so the lava still glows
    behind them, the skill pills share the project cards' fill, and the secondary text colours are brightened to
    compensate. indexscript.js detects the full-width canvas by itself and switches the lamp to its
@@ -1052,8 +1165,8 @@ button.btn:disabled { opacity: 0.6; cursor: not-allowed; }
   .lava__canvas--right { display: none; }
   .lava__canvas--left {
     width: 100%;
-    opacity: 0.24;                              /* dimmed so text and panels keep strong contrast */
-    filter: brightness(0.85);                   /* and a little darker */
+    opacity: 0.2;                               /* dimmed so text and panels keep strong contrast */
+    filter: brightness(0.72);                   /* and darker still */
     -webkit-mask-image: none;
     mask-image: none;
   }
@@ -1063,6 +1176,9 @@ button.btn:disabled { opacity: 0.6; cursor: not-allowed; }
     --text-faint: #a3ada8;
   }
   .site-footer { background: rgba(22, 25, 24, 0.88); }
+
+  /* "Get in touch" outline: green instead of the faint grey, so it stands out against the lava */
+  .btn--mail { --mail-edge: rgba(127, 184, 150, 0.85); }
 
   /* Skill pills: the same fill as the project cards (--surface) so they contrast with the lava.
      The selected pill keeps its green tint, layered over that same fill. */
@@ -1105,11 +1221,7 @@ button.btn:disabled { opacity: 0.6; cursor: not-allowed; }
   .hero .social { justify-content: center; }
   .hero .social { margin-top: 20px; }
 
-  /* Code card: much shorter. Swap in the 3-line snippet, tighten spacing, keep text left-aligned */
-  .code-card { padding: 16px; font-size: 12px; line-height: 1.6; text-align: left; }
-  .code-card__dots { margin-bottom: 10px; }
-  .code--full { display: none; }
-  .code--compact { display: block; }
+  /* Code window: nothing to change here, it scales its font and swaps to the short snippet by itself (section 5) */
 
   /* Contact form: a smaller box */
   .contact-form { padding: 18px; gap: 12px; }

@@ -1,9 +1,10 @@
 /* ==========================================================
    Portfolio landing page – JavaScript (motion)
-   1. Sticky header state   2. Code typing effect (one window, below 1440px)
-   2b. Code stack on wide screens: random spawn, dragging, glowing connectors
-   3. Work card reveal      3b. Card cover takeover layer      3c. Skill pill entrance
-   3d. Contact entrance (3, 3c and 3d replay each time they scroll back into view, see inView)
+   1. Sticky header state   2. Code typing effect (one window, below 800px)
+   2b. Code stack from 800px: random spawn, dragging, glowing connectors
+   3. Work card reveal      3b. Card cover takeover layer      3c. Skill pill entrance and "See more"
+   3d. Contact entrance (3, 3c and 3d replay each time they scroll back into view, see inView;
+   3c plays once only while the "See more" layout is active)
    3e. Hero entrance, line by line (plays once)
    4. Active nav link
    5. Stack pill toggles, project filtering and the mobile project limit
@@ -63,9 +64,9 @@
      Empties every code window that is showing, then types them out one after another (top to
      bottom), one character at a time, keeping the syntax colours. A single blinking cursor follows
      the typing. The first window has a full and a compact snippet, so only the visible one counts;
-     the two extra windows only show on wide screens (1440px and over). Each extra window slides in
+     the two extra windows only show from 800px. Each extra window slides in
      as its turn begins. */
-  const wideQuery = window.matchMedia('(min-width: 1440px)');   // wide screens use section 2b instead of typing
+  const wideQuery = window.matchMedia('(min-width: 800px)');   // wide screens use section 2b instead of typing
   const codeBlocks = Array.from(document.querySelectorAll('.code-card code')).filter(el => el.offsetParent !== null);
   const cardOf = block => block.closest('.code-card');
 
@@ -135,9 +136,9 @@
     if (jobs.length) setTimeout(startJob, 700);        // short pause after page load
   }
 
-  /* ---------- 2b. Code stack on wide screens (1440px and over) ----------
-     The three code windows float inside the .code-stack area (which the CSS grows into the right-hand
-     page margin). Each time the page loads they spawn at slightly random spots, stacked top to bottom and
+  /* ---------- 2b. Code stack from 800px ----------
+     The three code windows float inside the .code-stack area (the hero's right-hand column plus the free
+     space to its right and above and below it, sized in the CSS). Each time the page loads they spawn at slightly random spots, stacked top to bottom and
      stepping to the right. A visitor can drag any window anywhere inside the area (it stays inside). Two
      glowing lines join window 1 to 2 and 2 to 3. They are drawn in an SVG underneath all the windows, so
      they can never cover code: with a gap between two windows the line runs from the lower edge of the
@@ -266,17 +267,20 @@
     // Wait for the fonts so the windows are measured at their real size
     const fontsReady = (document.fonts && document.fonts.ready) || Promise.resolve();
     fontsReady.then(init);
-    wideQuery.addEventListener('change', init);      // the window was widened past 1440px after loading
+    wideQuery.addEventListener('change', init);      // the window was widened past 800px after loading
 
-    // Keep every window inside the area when the browser is resized
-    window.addEventListener('resize', () => {
+    // Keep every window inside the area when the browser is resized, or when the area itself changes
+    // size (it stretches to the hero row, which can change as fonts load or the text re-wraps)
+    const keepInside = () => {
       if (!ready || !wideQuery.matches) return;
       codeCards.forEach((card, i) => {
         pos[i].x = clamp(pos[i].x, 0, maxX(i));
         pos[i].y = clamp(pos[i].y, 0, maxY(i));
       });
       draw();
-    }, { passive: true });
+    };
+    window.addEventListener('resize', keepInside, { passive: true });
+    if ('ResizeObserver' in window) new ResizeObserver(keepInside).observe(codeStack);
   }
 
   /* ---------- 3. Work card reveal ----------
@@ -403,16 +407,91 @@
     window.addEventListener('resize', () => cards.forEach(fitCard));
   }
 
-  /* ---------- 3c. Skill pill entrance ----------
+  /* ---------- 3c. Skill pill entrance and "See more" ----------
      The pills rise and fade in, staggered by position, each time the Stack section scrolls into view
-     (the CSS hides them only when JS is running). */
+     (the CSS hides them only when JS is running).
+     When the pills would need three or more rows (narrow phones, or lots of skills), only two rows are
+     kept: the last pill of row 2 is replaced by a "See more" pill that reveals the rest below when pressed
+     (and "See less" hides them again). In that case the entrance plays once only and does not replay on
+     scroll. Pills are made slightly smaller on narrow screens, and also whenever 3 rows would be needed. */
   const pillList = document.querySelector('.pills');
   if (pillList) {
-    pillList.querySelectorAll('li').forEach((li, i) => li.style.setProperty('--i', i));
+    const MAX_ROWS = 2;
+    const smallQuery = window.matchMedia('(max-width: 550px)');
+    let expanded = false;
+
+    const skillItems = () => Array.from(pillList.children).filter(li => !li.classList.contains('pill-more'));
+    const rowCount = () => new Set(
+      Array.from(pillList.children).filter(li => li.offsetParent !== null).map(li => li.offsetTop)
+    ).size;
+
+    const showExpanded = more => {
+      pillList.classList.toggle('is-expanded', expanded);
+      if (more) {
+        const btn = more.querySelector('button');
+        btn.setAttribute('aria-expanded', String(expanded));
+        btn.textContent = expanded ? 'See less' : 'See more';
+      }
+    };
+
+    const makeMore = () => {
+      const li = document.createElement('li');
+      li.className = 'pill-more';
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'pill pill--more';           // not a skill filter: section 5 skips .pill--more
+      btn.setAttribute('aria-expanded', 'false');
+      btn.textContent = 'See more';
+      btn.addEventListener('click', () => { expanded = !expanded; showExpanded(li); });
+      li.append(btn);
+      return li;
+    };
+
+    const layoutPills = () => {
+      // Start again from the plain list
+      pillList.querySelector('.pill-more')?.remove();
+      pillList.classList.remove('has-more', 'is-expanded', 'pills--small');
+      const items = skillItems();
+      items.forEach(li => { li.classList.remove('is-extra'); li.style.removeProperty('--x'); });
+
+      // Smaller pills on narrow screens, or when the normal size would need 3 rows
+      if (smallQuery.matches || rowCount() > MAX_ROWS) pillList.classList.add('pills--small');
+
+      if (rowCount() > MAX_ROWS) {
+        // Which pill starts row 3? Keep everything before it except the last pill of row 2, which the
+        // "See more" pill replaces. If "See more" itself is too wide for that slot, drop one more pill.
+        const tops = Array.from(new Set(items.map(li => li.offsetTop))).sort((a, b) => a - b);
+        const firstOfRow3 = items.findIndex(li => li.offsetTop > tops[1]);
+        const more = makeMore();
+        pillList.classList.add('has-more');
+        for (let keep = firstOfRow3 - 1; keep >= 1; keep--) {
+          items.forEach((li, i) => li.classList.toggle('is-extra', i >= keep));
+          items[keep - 1].after(more);
+          if (rowCount() <= MAX_ROWS) break;
+        }
+        items.filter(li => li.classList.contains('is-extra')).forEach((li, n) => li.style.setProperty('--x', n));
+        showExpanded(more);
+      }
+      Array.from(pillList.children).forEach((li, i) => li.style.setProperty('--i', i));   // entrance stagger
+    };
+
+    layoutPills();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(layoutPills);
+    smallQuery.addEventListener('change', layoutPills);
+    if ('ResizeObserver' in window) {
+      let lastWidth = Math.round(pillList.clientWidth);
+      new ResizeObserver(() => {
+        const width = Math.round(pillList.clientWidth);
+        if (width !== lastWidth) { lastWidth = width; layoutPills(); }
+      }).observe(pillList);
+    } else {
+      window.addEventListener('resize', layoutPills);
+    }
+
     inView(
       [pillList],
       els => els.forEach(el => el.classList.add('is-visible')),
-      el => el.classList.remove('is-visible')
+      el => { if (!el.classList.contains('has-more')) el.classList.remove('is-visible'); }   // "See more" layout: play once only
     );
   }
 
@@ -610,7 +689,7 @@
   applyFilter();                                      // apply the mobile limit on load
   mobileQuery.addEventListener('change', applyFilter);   // and when the screen size crosses 600px
 
-  document.querySelectorAll('.pill').forEach(pill => {
+  document.querySelectorAll('.pill:not(.pill--more)').forEach(pill => {
     pill.addEventListener('click', () => {
       const isOn = pill.getAttribute('aria-pressed') !== 'true';
       pill.setAttribute('aria-pressed', String(isOn));   // drives the CSS and screen readers

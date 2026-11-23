@@ -92,12 +92,13 @@
         </ul>
       </div>
 
-      <!-- Decorative code windows to showcase skills. Below 1440px only the first window shows and its code
-           is typed out. At 1440px and over (where the lava lamp fills the page margins) all three windows
-           appear in a free-floating area (section 2b of indexscript.js): they spawn at slightly random spots,
-           can be dragged around, and are joined by glowing lines drawn underneath them. The extra chrome
-           (file tab, language badge, line numbers, status bar) only shows on those wide screens. The whole
-           stack is aria-hidden: it is decorative, and the same skills are listed in the Stack section. -->
+      <!-- Decorative code windows to showcase skills. From 800px wide all three windows appear in a free-floating
+           area (section 2b of indexscript.js): they spawn at slightly random spots, can be dragged around, and
+           are joined by glowing lines drawn underneath them (from 1440px the area also grows into the page
+           margin). Under 800px only the first window shows, under the hero text, with its code typed out. The
+           windows never scroll sideways: the CSS (section 5) scales the text to fit and swaps window 1 to a
+           shorter snippet when it is narrow. The whole stack is aria-hidden: it is decorative, and the same
+           skills are listed in the Stack section. -->
       <div class="code-stack" aria-hidden="true">
 
         <!-- Window 1: C# (always shown) -->
@@ -107,18 +108,16 @@
             <span class="code-card__tab">Program.cs</span><span class="code-card__badge">C#</span>
           </div>
           <div class="code-card__body">
-            <div class="code-card__gutter" aria-hidden="true">1<br>2<br>3<br>4<br>5<br>6</div>
+            <div class="code-card__gutter" aria-hidden="true">1<br>2<br>3<span class="full-only"><br>4<br>5<br>6</span></div>
 <!-- Full snippet for tablets and desktops (one .ln per line; --i orders the line-by-line reveal) -->
 <pre class="code--full"><code><span class="ln" style="--i:0"><span class="kw">var</span> app = WebApplication.CreateBuilder(args).Build();</span><span class="ln" style="--i:1"></span><span class="ln" style="--i:2">app.<span class="fn">MapGet</span>("/skills", () =&gt; <span class="kw">new</span>[] {</span><span class="ln" style="--i:3">    "C#", "HTML/CSS/JS", "ASP.NET Core", "JavaScript", "SQL",</span><span class="ln" style="--i:4">    "Python"</span><span class="ln" style="--i:5">});</span></code></pre>
-<!-- Shorter 3-line snippet shown instead on mobile (the CSS swaps the two) -->
-<pre class="code--compact"><code><span class="kw">var</span> app = WebApplication.Create();
-app.<span class="fn">MapGet</span>("/skills", () =&gt;
-    "C#, .NET, SQL, JS");</code></pre>
+<!-- Shorter 3-line snippet, swapped in by the CSS (container query, section 5) when the window is too narrow for the full one -->
+<pre class="code--compact"><code><span class="ln" style="--i:0"><span class="kw">var</span> app = WebApplication.Create();</span><span class="ln" style="--i:1">app.<span class="fn">MapGet</span>("/skills", () =&gt;</span><span class="ln" style="--i:2">    "C#, .NET, SQL, JS");</span></code></pre>
           </div>
-          <div class="code-card__foot"><span>Ln 6, Col 4 · C#</span><span>UTF-8</span></div>
+          <div class="code-card__foot"><span><span class="full-only">Ln 6, Col 4</span><span class="compact-only">Ln 3, Col 25</span> · C#</span><span>UTF-8</span></div>
         </figure>
 
-        <!-- Window 2: JavaScript (wide screens only) -->
+        <!-- Window 2: JavaScript (800px and over) -->
         <figure class="code-card code-card--extra code-card--2">
           <div class="code-card__bar">
             <div class="code-card__dots" aria-hidden="true"><span></span><span></span><span></span></div>
@@ -131,7 +130,7 @@ app.<span class="fn">MapGet</span>("/skills", () =&gt;
           <div class="code-card__foot"><span>Ln 4, Col 22 · JavaScript</span><span>UTF-8</span></div>
         </figure>
 
-        <!-- Window 3: SQL (wide screens only) -->
+        <!-- Window 3: SQL (800px and over) -->
         <figure class="code-card code-card--extra code-card--3">
           <div class="code-card__bar">
             <div class="code-card__dots" aria-hidden="true"><span></span><span></span><span></span></div>
