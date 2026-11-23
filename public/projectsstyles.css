@@ -375,7 +375,7 @@ html.lb-open { overflow: hidden; }
   .project__head { margin-bottom: 20px; }
   .project__head h1 { font-size: 32px; margin-bottom: 10px; }
   .project__grid + .project__grid { margin-top: 24px; }
-  .project__head p { font-size: 17px; }
+  .project__head p { font-size: 15px; }
   .project__head .card__tags { margin-top: 12px; }
   .project__actions { margin-top: 16px; }
   .project__col > .mini-label { font-size: 18px; margin-bottom: 12px; }

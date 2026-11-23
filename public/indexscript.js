@@ -1,7 +1,8 @@
 /* ==========================================================
    Portfolio landing page – JavaScript (motion)
    1. Sticky header state   2. Code typing effect (one window, three stacked on wide screens)
-   3. Work card reveal      4. Active nav link
+   3. Work card reveal      3b. Card cover takeover layer      3c. Skill pill entrance
+   4. Active nav link
    5. Stack pill toggles, project filtering and the mobile project limit
    6. Contact form (sends the message to the server, which stores it in the D1 database)
    7. Lava lamp background (canvas metaballs)
@@ -114,6 +115,63 @@
       });
     }, { threshold: 0.2 });
     cards.forEach(card => reveal.observe(card));
+  }
+
+  /* ---------- 3b. Cover takeover layer ----------
+     Each card gets a decorative .card__takeover layer holding the full cover and a caption. The CSS
+     (section 7, "Cover takeover") unfolds it over the card on hover. The cover is read from the
+     background-image content.js already set on .card__image, so nothing else needs to change. */
+  cards.forEach(card => {
+    const thumb = card.querySelector('.card__image');
+    const link = card.querySelector('.card__link');
+    if (!thumb || !link || card.querySelector('.card__takeover')) return;
+
+    const layer = document.createElement('div');
+    layer.className = 'card__takeover';
+    layer.setAttribute('aria-hidden', 'true');
+
+    const match = /url\(\s*["']?([^"')]+)["']?\s*\)/.exec(thumb.style.backgroundImage || '');
+    if (match) {
+      const img = document.createElement('img');
+      img.src = match[1];
+      img.alt = '';
+      img.decoding = 'async';
+      layer.append(img);
+    } else {
+      layer.classList.add('card__takeover--empty');   // no cover yet: placeholder grey
+    }
+
+    const caption = document.createElement('div');
+    caption.className = 'card__takeover-cap';
+    const title = document.createElement('span');
+    title.className = 'card__takeover-title';
+    title.textContent = link.textContent;
+    const cta = document.createElement('span');
+    cta.className = 'card__takeover-cta';
+    cta.textContent = 'View project \u2192';
+    caption.append(title, cta);
+    layer.append(caption);
+
+    card.append(layer);
+  });
+
+  /* ---------- 3c. Skill pill entrance ----------
+     The pills rise and fade in, staggered by position, the first time the Stack section scrolls into
+     view (the CSS hides them only when JS is running). */
+  const pillList = document.querySelector('.pills');
+  if (pillList) {
+    pillList.querySelectorAll('li').forEach((li, i) => li.style.setProperty('--i', i));
+    if (reduceMotion || !('IntersectionObserver' in window)) {
+      pillList.classList.add('is-visible');
+    } else {
+      const revealPills = new IntersectionObserver((entries, obs) => {
+        if (entries.some(entry => entry.isIntersecting)) {
+          pillList.classList.add('is-visible');
+          obs.disconnect();                          // only animate once
+        }
+      }, { threshold: 0.2 });
+      revealPills.observe(pillList);
+    }
   }
 
   /* ---------- 4. Active nav link ----------

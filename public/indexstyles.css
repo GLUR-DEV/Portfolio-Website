@@ -4,7 +4,7 @@
    1. Design tokens   2. Base   3. Layout helpers
    4. Header          5. Hero   6. Stack
    7. Work            7b. Contact  8. About  9. Footer
-   9b. Motion (typing cursor, card reveal)
+   9b. Motion (typing cursor, card reveal, skill pill entrance)
    9c. Lava lamp background (side margins on wide screens, full page below 1440px)
    10. Responsive / accessibility
    ========================================================== */
@@ -208,6 +208,80 @@ ul { margin: 0; padding: 0; list-style: none; }
 .btn--secondary { border: 1px solid var(--border); }
 .btn--secondary:hover { border-color: var(--green); }
 
+/* Hero buttons, Variant 1 (index.html only, via .btn--arrow and .btn--mail):
+   - "View my work": the fill turns pale, the button lifts and a down arrow slides in.
+   - "Get in touch": a green fill sweeps in from the left (like the social chips), the text turns dark
+     and an envelope tilts in.
+   - Both press down slightly while clicked. :focus-visible and :active mirror :hover for keyboard and touch. */
+.btn--arrow,
+.btn--mail {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;          /* same 1px edge on both buttons so their heights match */
+  overflow: hidden;
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease,
+              transform 0.2s ease, box-shadow 0.25s ease, background-size 0.35s ease;
+}
+.btn--mail { border-color: var(--border); }
+
+.btn__arrow {
+  display: inline-block;
+  max-width: 0;
+  margin-left: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(-4px);
+  transition: max-width 0.3s ease, margin-left 0.3s ease, opacity 0.25s ease, transform 0.3s ease;
+}
+.btn--arrow:hover,
+.btn--arrow:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(127, 184, 150, 0.3);
+}
+.btn--arrow:hover .btn__arrow,
+.btn--arrow:focus-visible .btn__arrow {
+  max-width: 20px;
+  margin-left: 10px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.btn--mail {
+  background-color: transparent;
+  background-image: linear-gradient(var(--green), var(--green));
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 0% 100%;               /* the green fill, hidden until hover */
+}
+.btn--mail:hover,
+.btn--mail:focus-visible {
+  background-size: 100% 100%;
+  color: var(--green-ink);
+  border-color: var(--green);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(127, 184, 150, 0.28);
+}
+.btn__mail {
+  flex: none;
+  width: 0;
+  height: 18px;
+  margin-left: 0;
+  opacity: 0;
+  transition: width 0.3s ease, margin-left 0.3s ease, opacity 0.25s ease, transform 0.25s ease;
+}
+.btn--mail:hover .btn__mail,
+.btn--mail:focus-visible .btn__mail {
+  width: 18px;
+  margin-left: 10px;
+  opacity: 1;
+  transform: rotate(-10deg);
+}
+
+.btn--arrow:active,
+.btn--mail:active { transform: translateY(0) scale(0.97); }   /* press-down on click or touch */
+
 /* Social links (shared by hero, contact section and footer) */
 .social {
   display: flex;
@@ -325,6 +399,8 @@ ul { margin: 0; padding: 0; list-style: none; }
 .pills { display: flex; flex-wrap: wrap; gap: 12px; }
 /* Each pill is a toggle button; several can be selected at once (aria-pressed="true") */
 .pill {
+  display: inline-flex;                 /* lets the green dot sit beside the label */
+  align-items: center;
   padding: 10px 20px;
   background: transparent;
   border: 1px solid var(--border);
@@ -333,9 +409,28 @@ ul { margin: 0; padding: 0; list-style: none; }
   font: inherit;
   font-size: 15px;
   cursor: pointer;
-  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease,
+              transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.pill:hover { border-color: rgba(127, 184, 150, 0.6); }
+/* Hover: a green dot opens up before the label and the pill grows a little. The dot also stays on
+   selected pills, so the selected state is readable without relying on colour alone. */
+.pill::before {
+  content: "";
+  flex: none;
+  width: 0;
+  height: 8px;
+  margin-right: 0;
+  border-radius: 50%;
+  background: var(--green);
+  opacity: 0;
+  transition: width 0.25s ease, margin-right 0.25s ease, opacity 0.2s ease;
+}
+.pill:hover,
+.pill:focus-visible { transform: scale(1.06); border-color: var(--green); }
+.pill:hover::before,
+.pill:focus-visible::before,
+.pill[aria-pressed="true"]::before { width: 8px; margin-right: 8px; opacity: 1; }
+.pill:active { transform: scale(0.96); }
 .pill[aria-pressed="true"] {          /* selected state */
   border-color: var(--green);
   background: rgba(127, 184, 150, 0.16);
@@ -412,6 +507,73 @@ ul { margin: 0; padding: 0; list-style: none; }
 .card:hover .card__cta span,
 .card:focus-within .card__cta span { transform: translateX(5px); }
 .card p  { margin: 0; color: var(--text-muted); }
+
+/* Cover takeover on hover or keyboard focus: the cover unfolds out of its 120px band until it fills the
+   whole card, so the full screenshot is visible, and the title and "View project" fade in over it.
+   Nothing moves in the layout (the layer is absolutely positioned); the description and tags are
+   hidden while it is open. indexscript.js (section 3) adds the .card__takeover layer to each card from
+   the cover already set on .card__image, so content.js needs no change. Resting state: the layer is
+   clipped to exactly the band (28px card padding, 120px tall), so it looks the same as before. */
+.card__takeover {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;                /* clicks still reach the whole-card link underneath */
+  background: #242826;                 /* solid (not --surface, which is see-through on small screens) so the text underneath is hidden */
+  border-radius: var(--radius-md);
+  clip-path: inset(28px 28px calc(100% - 148px) 28px round var(--radius-sm));
+  transition: clip-path 0.55s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.3s ease;
+}
+.card__takeover--empty { background: var(--surface-alt); }   /* no cover yet: matches the grey placeholder band */
+.card__takeover img {
+  position: absolute;
+  left: 28px;
+  top: 88px;                           /* centre of the band: 28px padding + 60px */
+  width: calc(100% - 56px);
+  max-width: none;
+  height: auto;
+  transform: translateY(-50%);
+  transition: left 0.55s cubic-bezier(0.2, 0.8, 0.2, 1), top 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
+              width 0.55s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.card__takeover::after {               /* soft dark fade so the caption stays readable over a tall cover */
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 45%;
+  background: linear-gradient(to bottom, rgba(36, 40, 38, 0), #242826 75%);
+  opacity: 0;
+  transition: opacity 0.3s ease 0.15s;
+}
+.card__takeover-cap {
+  position: absolute;
+  left: 28px; right: 28px; bottom: 24px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.25s ease, transform 0.3s ease;
+}
+.card__takeover-title { font-size: 22px; font-weight: 700; line-height: 1.3; color: var(--green); }
+.card__takeover-cta { font-family: var(--font-mono); font-size: 13px; color: var(--green); }
+
+.card:hover .card__takeover,
+.card:focus-within .card__takeover { clip-path: inset(0 0 0 0 round var(--radius-md)); }
+.card:hover .card__takeover--empty,
+.card:focus-within .card__takeover--empty { background: #242826; }
+.card:hover .card__takeover img,
+.card:focus-within .card__takeover img { left: 0; top: 0; width: 100%; transform: none; }
+.card:hover .card__takeover::after,
+.card:focus-within .card__takeover::after { opacity: 1; }
+.card:hover .card__takeover-cap,
+.card:focus-within .card__takeover-cap {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.3s ease 0.2s, transform 0.35s ease 0.2s;
+}
 
 /* Project tags (up to 3 per card); a tag matching a selected stack pill turns green */
 .card__tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
@@ -557,6 +719,17 @@ button.btn:disabled { opacity: 0.6; cursor: not-allowed; }
   from { opacity: 0; transform: translateY(24px); }
 }
 
+/* Skill pills rise and fade in, one after another, when the Stack section scrolls into view (hidden
+   only when JS is running, like the cards). --i is each pill's index, set by indexscript.js, to stagger
+   the delay. The hover effect lives on the button inside, so this delay never slows it down. */
+.js .pills li { opacity: 0; transform: translateY(18px); }
+.js .pills.is-visible li {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition-delay: calc(var(--i, 0) * 80ms);
+}
+
 /* ---------- 9c. Lava lamp background ----------
    A fixed layer behind everything. The animation itself is drawn onto two canvases by
    indexscript.js (section 7).
@@ -696,7 +869,8 @@ button.btn:disabled { opacity: 0.6; cursor: not-allowed; }
   .contact__lead { margin-bottom: 16px; }
 }
 
-/* Respect users who prefer no motion (this design has none, so this is a safeguard) */
+/* Respect users who prefer no motion: every transition and animation above is switched off.
+   indexscript.js also shows the cards and skill pills straight away in that case. */
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }

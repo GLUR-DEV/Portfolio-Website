@@ -79,8 +79,10 @@
 
         <!-- Primary and secondary calls to action -->
         <div class="hero__actions">
-          <a class="btn btn--primary" href="#work">View my work</a>
-          <a class="btn btn--secondary" href="#contact">Get in touch</a>
+          <!-- btn--arrow / btn--mail switch on the hover animations in indexstyles.css (section 5):
+               the arrow slides in on "View my work", a green fill sweeps across "Get in touch" and the envelope tilts in -->
+          <a class="btn btn--primary btn--arrow" href="#work">View my work<span class="btn__arrow" aria-hidden="true">&darr;</span></a>
+          <a class="btn btn--secondary btn--mail" href="#contact">Get in touch<svg class="btn__mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></a>
         </div>
 
         <!-- Social links (off-site links open in a new tab) -->
