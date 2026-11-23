@@ -92,44 +92,56 @@
         </ul>
       </div>
 
-      <!-- Decorative code windows to showcase skills. On wide screens (1440px and over, where the lava
-           lamp fills the page margins) three windows are stacked and typed out one after another;
-           narrower screens show only the first. The whole stack is aria-hidden: the typing effect
-           leaves partial text on screen, and the same skills are listed in the Stack section. -->
+      <!-- Decorative code windows to showcase skills. Below 1440px only the first window shows and its code
+           is typed out. At 1440px and over (where the lava lamp fills the page margins) all three windows
+           appear in a free-floating area (section 2b of indexscript.js): they spawn at slightly random spots,
+           can be dragged around, and are joined by glowing lines drawn underneath them. The extra chrome
+           (file tab, language badge, line numbers, status bar) only shows on those wide screens. The whole
+           stack is aria-hidden: it is decorative, and the same skills are listed in the Stack section. -->
       <div class="code-stack" aria-hidden="true">
 
         <!-- Window 1: C# (always shown) -->
         <figure class="code-card code-card--1">
-          <div class="code-card__dots" aria-hidden="true"><span></span><span></span><span></span></div>
-<!-- Full snippet for tablets and desktops -->
-<pre class="code--full"><code><span class="kw">var</span> app = WebApplication.CreateBuilder(args).Build();
-
-app.<span class="fn">MapGet</span>("/skills", () =&gt; <span class="kw">new</span>[] {
-    "C#", "HTML/CSS/JS", "ASP.NET Core", "JavaScript", "SQL",
-    "Python"
-});</code></pre>
+          <div class="code-card__bar">
+            <div class="code-card__dots" aria-hidden="true"><span></span><span></span><span></span></div>
+            <span class="code-card__tab">Program.cs</span><span class="code-card__badge">C#</span>
+          </div>
+          <div class="code-card__body">
+            <div class="code-card__gutter" aria-hidden="true">1<br>2<br>3<br>4<br>5<br>6</div>
+<!-- Full snippet for tablets and desktops (one .ln per line; --i orders the line-by-line reveal) -->
+<pre class="code--full"><code><span class="ln" style="--i:0"><span class="kw">var</span> app = WebApplication.CreateBuilder(args).Build();</span><span class="ln" style="--i:1"></span><span class="ln" style="--i:2">app.<span class="fn">MapGet</span>("/skills", () =&gt; <span class="kw">new</span>[] {</span><span class="ln" style="--i:3">    "C#", "HTML/CSS/JS", "ASP.NET Core", "JavaScript", "SQL",</span><span class="ln" style="--i:4">    "Python"</span><span class="ln" style="--i:5">});</span></code></pre>
 <!-- Shorter 3-line snippet shown instead on mobile (the CSS swaps the two) -->
 <pre class="code--compact"><code><span class="kw">var</span> app = WebApplication.Create();
 app.<span class="fn">MapGet</span>("/skills", () =&gt;
     "C#, .NET, SQL, JS");</code></pre>
+          </div>
+          <div class="code-card__foot"><span>Ln 6, Col 4 · C#</span><span>UTF-8</span></div>
         </figure>
 
         <!-- Window 2: JavaScript (wide screens only) -->
         <figure class="code-card code-card--extra code-card--2">
-          <div class="code-card__dots" aria-hidden="true"><span></span><span></span><span></span></div>
-<pre class="code--full"><code><span class="kw">const</span> skills = <span class="kw">await</span> <span class="fn">fetch</span>("/skills")
-  .<span class="fn">then</span>(res =&gt; res.<span class="fn">json</span>());
-
-<span class="fn">renderSkills</span>(skills);</code></pre>
+          <div class="code-card__bar">
+            <div class="code-card__dots" aria-hidden="true"><span></span><span></span><span></span></div>
+            <span class="code-card__tab">skills.js</span><span class="code-card__badge">JavaScript</span>
+          </div>
+          <div class="code-card__body">
+            <div class="code-card__gutter" aria-hidden="true">1<br>2<br>3<br>4</div>
+<pre class="code--full"><code><span class="ln" style="--i:6"><span class="kw">const</span> skills = <span class="kw">await</span> <span class="fn">fetch</span>("/skills")</span><span class="ln" style="--i:7">  .<span class="fn">then</span>(res =&gt; res.<span class="fn">json</span>());</span><span class="ln" style="--i:8"></span><span class="ln" style="--i:9"><span class="fn">renderSkills</span>(skills);</span></code></pre>
+          </div>
+          <div class="code-card__foot"><span>Ln 4, Col 22 · JavaScript</span><span>UTF-8</span></div>
         </figure>
 
         <!-- Window 3: SQL (wide screens only) -->
         <figure class="code-card code-card--extra code-card--3">
-          <div class="code-card__dots" aria-hidden="true"><span></span><span></span><span></span></div>
-<pre class="code--full"><code><span class="kw">SELECT</span> name, level
-<span class="kw">FROM</span> skills
-<span class="kw">WHERE</span> years &gt; 1
-<span class="kw">ORDER BY</span> level <span class="kw">DESC</span>;</code></pre>
+          <div class="code-card__bar">
+            <div class="code-card__dots" aria-hidden="true"><span></span><span></span><span></span></div>
+            <span class="code-card__tab">skills.sql</span><span class="code-card__badge">SQL</span>
+          </div>
+          <div class="code-card__body">
+            <div class="code-card__gutter" aria-hidden="true">1<br>2<br>3<br>4</div>
+<pre class="code--full"><code><span class="ln" style="--i:10"><span class="kw">SELECT</span> name, level</span><span class="ln" style="--i:11"><span class="kw">FROM</span> skills</span><span class="ln" style="--i:12"><span class="kw">WHERE</span> years &gt; 1</span><span class="ln" style="--i:13"><span class="kw">ORDER BY</span> level <span class="kw">DESC</span>;</span></code></pre>
+          </div>
+          <div class="code-card__foot"><span>Ln 4, Col 21 · SQL</span><span>UTF-8</span></div>
         </figure>
 
       </div>

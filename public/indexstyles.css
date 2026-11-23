@@ -360,28 +360,15 @@ ul { margin: 0; padding: 0; list-style: none; }
 }
 .code-card pre { margin: 0; }
 
-/* Code stack: the hero's code windows sit in one column. Only the first window shows on screens
-   under 1440px; at 1440px and over (the same point the lava lamp moves into the page margins) two more
-   windows join it. Each is stepped a little further in and overlaps the bottom edge of the one before
-   (the overlap only covers that window's empty bottom padding, so no code is hidden), so the three
-   look stacked. Later windows sit on top, with a shadow to show the layering. */
+/* Code stack. Below 1440px only the first window shows (typed out by indexscript.js). At 1440px and over
+   (the same point the lava lamp moves into the page margins) the stack turns into a free-floating area:
+   it grows into the right-hand page margin and indexscript.js (section 2b) places all three windows
+   inside it at slightly random spots, lets the visitor drag them, and draws glowing lines underneath.
+   The extra window chrome, the line numbers and the connector layer only exist on those wide screens. */
 .code-stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .code-card--extra { display: none; }
-@media (min-width: 1440px) {
-  .code-stack { gap: 0; }                            /* the overlap replaces the gap */
-  .code-card--extra {
-    display: block;
-    position: relative;
-    margin-top: -20px;                               /* tucks under the window above by 20px */
-    box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.35);
-  }
-  .code-card--2 { margin-left: 28px; z-index: 1; }
-  .code-card--3 { margin-left: 56px; z-index: 2; }
-}
-/* The extra windows slide in when their typing starts (indexscript.js adds .is-shown). Only with
-   JavaScript running, so they are never left hidden without it. */
-.js .code-card--extra { opacity: 0; transform: translateY(14px); transition: opacity 0.5s ease, transform 0.5s ease; }
-.js .code-card--extra.is-shown { opacity: 1; transform: none; }
+.code-card__tab, .code-card__badge, .code-card__gutter, .code-card__foot, .code-lines { display: none; }
+.ln { display: block; min-height: 1.8em; }   /* one per code line, so each line can fade in on wide screens */
 .code--compact { display: none; }   /* the short snippet only appears on mobile (section 10) */
 .code-card__dots { display: flex; gap: 8px; margin-bottom: 16px; }
 .code-card__dots span {
@@ -392,6 +379,128 @@ ul { margin: 0; padding: 0; list-style: none; }
 /* Syntax colouring */
 .kw { color: var(--terracotta); }   /* keywords */
 .fn { color: var(--green); }        /* method names */
+
+/* Wide screens (1440px and over): free-floating windows with detailed chrome and glowing connectors.
+   The left/top values are only the starting layout before indexscript.js runs; the script sets its own
+   random positions inline. */
+@media (min-width: 1440px) {
+  .code-stack {
+    position: relative;
+    height: 660px;
+    margin-right: calc((var(--container) - 100vw) / 2 - 8px);   /* grows into the right-hand margin, stopping 8px short of the window edge */
+  }
+  .code-card {
+    position: absolute;
+    width: 560px;
+    max-width: 100%;
+    padding: 0;
+    overflow: hidden;
+    font-size: 13px;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;                              /* dragging works with touch as well */
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+  }
+  .code-card--extra { display: block; }
+  .code-card--1 { --lang: var(--green);      left: 12px; top: 20px;  z-index: 1; }
+  .code-card--2 { --lang: #d4a64f;           left: 50px; top: 210px; z-index: 2; }
+  .code-card--3 { --lang: var(--terracotta); left: 90px; top: 400px; z-index: 3; }
+  .code-card:hover { box-shadow: 0 22px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--green); }
+  .code-card.is-front { transform: translateY(-4px); }
+  .code-card.is-dragging { transform: translateY(-6px) scale(1.01); cursor: grabbing; }
+
+  /* Title bar: window dots, file tab and language badge */
+  .code-card__bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: #1f2321;
+    border-bottom: 1px solid #333936;
+  }
+  .code-card__dots { margin-bottom: 0; }
+  .code-card__dots span:nth-child(1) { background: #c9695d; }
+  .code-card__dots span:nth-child(2) { background: #d1a64f; }
+  .code-card__dots span:nth-child(3) { background: var(--green); }
+  .code-card__tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 12px;
+    padding: 4px 12px;
+    background: var(--surface);
+    border: 1px solid #333936;
+    border-radius: 6px 6px 0 0;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #cfd8d2;
+  }
+  .code-card__tab::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: var(--lang); }
+  .code-card__badge {
+    display: block;
+    margin-left: auto;
+    padding: 2px 9px;
+    border: 1px solid var(--lang);
+    border-radius: 999px;
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--lang);
+  }
+
+  /* Code with a line-number gutter, then a status bar */
+  .code-card__body { display: flex; gap: 6px; padding: 16px 18px; }
+  .code-card__gutter { display: block; flex: none; width: 28px; color: #5d6761; user-select: none; }
+  .code-card__body pre { min-width: 0; }
+  .code-card__foot {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 14px;
+    font-size: 11px;
+    line-height: 1.6;
+    color: #7d8882;
+    background: #1f2321;
+    border-top: 1px solid #333936;
+  }
+
+  /* Glowing connector lines (the SVG is added by indexscript.js). They sit BELOW every window (z-index 0
+     against the windows' 1 and up), so a line can only show in the gaps between windows and never over code. */
+  .code-lines {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .code-lines path { fill: none; }
+  .code-lines .glow { stroke: var(--green); stroke-width: 9; opacity: 0.75; filter: url(#code-glow); }
+  .code-lines .core { stroke: var(--green); stroke-width: 1.5; }
+  .code-lines .flow {
+    stroke: #d9f2e3;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-dasharray: 4 12;
+    animation: codeFlow 1.2s linear infinite;
+  }
+  @keyframes codeFlow { to { stroke-dashoffset: -32; } }
+
+  /* Entrance, about 1.3s in total: the windows rise in 0.18s apart, their lines fade in one by one,
+     then the connectors fade in. Hidden until indexscript.js has placed everything (.js only, so
+     nothing stays hidden if the script doesn't run). */
+  .js .code-stack:not(.is-live) .code-card,
+  .js .code-stack:not(.is-live) .code-lines { opacity: 0; }
+  .code-stack.is-live .code-card { animation: codeIn 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  .code-stack.is-live .code-card--2 { animation-delay: 0.18s; }
+  .code-stack.is-live .code-card--3 { animation-delay: 0.36s; }
+  .code-stack.is-live .ln { animation: codeLine 0.25s ease both; animation-delay: calc(0.3s + var(--i, 0) * 55ms); }
+  .code-stack.is-live .code-lines { animation: codeFade 0.5s ease 0.85s both; }
+  @keyframes codeIn { from { opacity: 0; translate: 0 28px; scale: 0.96; } to { opacity: 1; } }
+  @keyframes codeLine { from { opacity: 0; translate: -6px 0; } to { opacity: 1; } }
+  @keyframes codeFade { from { opacity: 0; } to { opacity: 1; } }
+}
 
 /* ---------- 6. Stack ---------- */
 .stack { padding-top: 24px; padding-bottom: 56px; }
@@ -509,7 +618,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 .card p  { margin: 0; color: var(--text-muted); }
 
 /* Cover takeover on hover or keyboard focus: the cover unfolds out of its 120px band to its full 16:10
-   size, and the space below it is used for the title, a two-line description and the skill tags with a
+   size, and the space below it is used for the title, the full description and the skill tags with a
    "View" cue on the right. Those three fade in one after another (0.25s, 0.32s and 0.39s after the hover
    starts). A tag is shown in green only while its stack pill is selected.
    The card keeps its current height and nothing moves in the layout (the layer is absolutely
@@ -568,21 +677,16 @@ ul { margin: 0; padding: 0; list-style: none; }
   margin: 4px 0 10px;
   font-size: 14px;
   line-height: 1.45;
-  color: var(--text-muted);
-  display: -webkit-box;                /* two lines at most, then cut off */
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  color: var(--text-muted);            /* full description, no line limit: the block grows upward from the bottom into the free space under the cover */
 }
 .card__takeover-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.card__takeover-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.card__takeover-tags { display: flex; flex-wrap: wrap; gap: 8px; }
 .card__takeover-tags li {
-  padding: 3px 8px;
+  padding: 4px 10px;                   /* same pill shape and size as the resting .card__tags li */
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 999px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-muted);
 }
 .card__takeover-tags li.is-on { border-color: var(--green); background: rgba(127, 184, 150, 0.16); color: var(--green); }

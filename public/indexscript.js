@@ -1,6 +1,7 @@
 /* ==========================================================
    Portfolio landing page – JavaScript (motion)
-   1. Sticky header state   2. Code typing effect (one window, three stacked on wide screens)
+   1. Sticky header state   2. Code typing effect (one window, below 1440px)
+   2b. Code stack on wide screens: random spawn, dragging, glowing connectors
    3. Work card reveal      3b. Card cover takeover layer      3c. Skill pill entrance
    3d. Contact entrance (3, 3c and 3d replay each time they scroll back into view, see inView)
    4. Active nav link
@@ -63,6 +64,7 @@
      the typing. The first window has a full and a compact snippet, so only the visible one counts;
      the two extra windows only show on wide screens (1440px and over). Each extra window slides in
      as its turn begins. */
+  const wideQuery = window.matchMedia('(min-width: 1440px)');   // wide screens use section 2b instead of typing
   const codeBlocks = Array.from(document.querySelectorAll('.code-card code')).filter(el => el.offsetParent !== null);
   const cardOf = block => block.closest('.code-card');
 
@@ -74,7 +76,7 @@
 
   if (reduceMotion) {
     codeBlocks.forEach(block => cardOf(block).classList.add('is-shown'));   // no typing: show it all
-  } else if (codeBlocks.length) {
+  } else if (codeBlocks.length && !wideQuery.matches) {
     // Measure every block first so each keeps its full height once emptied (no layout jump)
     const heights = codeBlocks.map(block => block.parentElement.offsetHeight);
 
@@ -130,6 +132,150 @@
     };
 
     if (jobs.length) setTimeout(startJob, 700);        // short pause after page load
+  }
+
+  /* ---------- 2b. Code stack on wide screens (1440px and over) ----------
+     The three code windows float inside the .code-stack area (which the CSS grows into the right-hand
+     page margin). Each time the page loads they spawn at slightly random spots, stacked top to bottom and
+     stepping to the right. A visitor can drag any window anywhere inside the area (it stays inside). Two
+     glowing lines join window 1 to 2 and 2 to 3. They are drawn in an SVG underneath all the windows, so
+     they can never cover code: with a gap between two windows the line runs from the lower edge of the
+     upper one to the upper edge of the lower one, and with no gap it loops round the nearer side.
+     Positions are kept until the page reloads. The entrance animation itself is all CSS (.is-live). */
+  const codeStack = document.querySelector('.code-stack');
+  const codeCards = codeStack ? Array.from(codeStack.querySelectorAll('.code-card')) : [];
+  if (codeStack && codeCards.length === 3) {
+    const SVG_NS = 'http://www.w3.org/2000/svg';
+    const LINKS = [[0, 1], [1, 2]];                 // which windows each line joins
+    const SPAWN = [                                  // where each window starts, as a fraction of its free room
+      { x: 0.09, xr: 0.16, y: 0.05, yr: 0.07 },     // x / y = centre, xr / yr = random spread either way
+      { x: 0.30, xr: 0.23, y: 0.46, yr: 0.10 },
+      { x: 0.51, xr: 0.30, y: 0.87, yr: 0.10 }
+    ];
+    const pos = codeCards.map(() => ({ x: 0, y: 0 }));
+    let lines = [];                                  // one {glow, core, flow} set of paths per link
+    let svg = null;
+    let ready = false;
+    let drag = null;
+    let topZ = 10;
+
+    const rand = spread => (Math.random() * 2 - 1) * spread;
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+    const maxX = i => Math.max(0, codeStack.clientWidth - codeCards[i].offsetWidth);
+    const maxY = i => Math.max(0, codeStack.clientHeight - codeCards[i].offsetHeight);
+    const rectOf = i => ({ x: pos[i].x, y: pos[i].y, w: codeCards[i].offsetWidth, h: codeCards[i].offsetHeight });
+
+    // SVG path between two windows (always drawn under them)
+    const linkPath = (a, b) => {
+      const A = rectOf(a), B = rectOf(b);
+      const [top, low] = A.y <= B.y ? [A, B] : [B, A];
+      if (low.y - (top.y + top.h) >= 24) {           // a gap between them: lower edge to upper edge
+        const x1 = top.x + top.w / 2, y1 = top.y + top.h;
+        const x2 = low.x + low.w / 2, y2 = low.y;
+        const d = Math.max(30, (y2 - y1) / 2);
+        return `M${x1},${y1} C${x1},${y1 + d} ${x2},${y2 - d} ${x2},${y2}`;
+      }
+      const areaW = codeStack.clientWidth;               // overlapping: loop round the left or right side
+      const left = Math.min(A.x, B.x) >= 70 || Math.max(A.x, B.x) + A.w + 70 > areaW;
+      const edge = r => (left ? r.x : r.x + r.w);
+      const bulge = left ? Math.max(-20, Math.min(A.x, B.x) - 70)
+                         : Math.min(areaW - 8, Math.max(A.x, B.x) + A.w + 70);
+      const y1 = A.y + A.h / 2, y2 = B.y + B.h / 2;
+      return `M${edge(A)},${y1} C${bulge},${y1} ${bulge},${y2} ${edge(B)},${y2}`;
+    };
+
+    const draw = () => {
+      codeCards.forEach((card, i) => { card.style.left = pos[i].x + 'px'; card.style.top = pos[i].y + 'px'; });
+      if (!svg) return;
+      LINKS.forEach(([a, b], n) => {
+        const d = linkPath(a, b);
+        Object.values(lines[n]).forEach(path => path.setAttribute('d', d));
+      });
+    };
+
+    const buildLines = () => {
+      svg = document.createElementNS(SVG_NS, 'svg');
+      svg.setAttribute('class', 'code-lines');
+      svg.setAttribute('aria-hidden', 'true');
+      // userSpaceOnUse: a perfectly straight line has no height or width, which would give a normal
+      // filter region of zero size and no glow
+      svg.innerHTML = '<defs><filter id="code-glow" filterUnits="userSpaceOnUse" x="-200" y="-200" ' +
+                      'width="3000" height="3000"><feGaussianBlur stdDeviation="6"/></filter></defs>';
+      lines = LINKS.map(() => {
+        const set = {};
+        ['glow', 'core', 'flow'].forEach(kind => {
+          set[kind] = document.createElementNS(SVG_NS, 'path');
+          set[kind].setAttribute('class', kind);
+          svg.append(set[kind]);
+        });
+        return set;
+      });
+      codeStack.prepend(svg);                            // first child, so it sits under the windows
+    };
+
+    const bringToFront = i => {
+      codeCards.forEach((card, j) => card.classList.toggle('is-front', j === i));
+      topZ += 1;
+      codeCards[i].style.zIndex = topZ;
+    };
+
+    const spawn = () => codeCards.forEach((card, i) => {
+      const s = SPAWN[i];
+      pos[i].x = clamp((s.x + rand(s.xr)) * maxX(i), 0, maxX(i));
+      pos[i].y = clamp((s.y + rand(s.yr)) * maxY(i), 0, maxY(i));
+      card.style.zIndex = i + 1;
+    });
+
+    // Dragging (mouse, pen or touch): pointer capture keeps the move events coming even if the pointer
+    // slips off the window
+    codeCards.forEach((card, i) => {
+      card.addEventListener('pointerdown', e => {
+        if (!ready || !wideQuery.matches || (e.pointerType === 'mouse' && e.button !== 0)) return;
+        drag = { i, sx: e.clientX, sy: e.clientY, ox: pos[i].x, oy: pos[i].y };
+        bringToFront(i);
+        card.classList.add('is-dragging');
+        card.setPointerCapture(e.pointerId);
+        e.preventDefault();                          // no text selection while dragging
+      });
+      card.addEventListener('pointermove', e => {
+        if (!drag || drag.i !== i) return;
+        pos[i].x = clamp(drag.ox + e.clientX - drag.sx, 0, maxX(i));
+        pos[i].y = clamp(drag.oy + e.clientY - drag.sy, 0, maxY(i));
+        draw();
+      });
+      const endDrag = () => {
+        if (!drag || drag.i !== i) return;
+        drag = null;
+        card.classList.remove('is-dragging');
+      };
+      card.addEventListener('pointerup', endDrag);
+      card.addEventListener('pointercancel', endDrag);
+    });
+
+    const init = () => {
+      if (ready || !wideQuery.matches) return;
+      ready = true;
+      buildLines();
+      spawn();
+      bringToFront(codeCards.length - 1);
+      draw();
+      requestAnimationFrame(() => codeStack.classList.add('is-live'));   // starts the CSS entrance
+    };
+
+    // Wait for the fonts so the windows are measured at their real size
+    const fontsReady = (document.fonts && document.fonts.ready) || Promise.resolve();
+    fontsReady.then(init);
+    wideQuery.addEventListener('change', init);      // the window was widened past 1440px after loading
+
+    // Keep every window inside the area when the browser is resized
+    window.addEventListener('resize', () => {
+      if (!ready || !wideQuery.matches) return;
+      codeCards.forEach((card, i) => {
+        pos[i].x = clamp(pos[i].x, 0, maxX(i));
+        pos[i].y = clamp(pos[i].y, 0, maxY(i));
+      });
+      draw();
+    }, { passive: true });
   }
 
   /* ---------- 3. Work card reveal ----------
